@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+/.vs
+/3D_Graphics/.vs/3D_Graphics
+/3D_Graphics/x64/Debug
