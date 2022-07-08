@@ -1,7 +1,6 @@
 #include <Graphics/D3DGraphics.h>
 #include <dxerr/dxerr.h>
 #include <sstream>
-#include <DirectXMath.h>
 #include <ErrorHandle/D3DGraphicsExceptionMacros.h>
 
 #include <d3dcompiler.h>
@@ -53,16 +52,16 @@ bool D3DGraphics::Initialize(int screenWidth, int screenHeight, bool vsync, HWND
 		0,                      // pFeatureLevels에 있는 원소들의 개수.
 		D3D11_SDK_VERSION,        // SDK_VERSION. 피쳐 레벨과는 다름.
 		&sd,                   // 스왑 체인 서술자
-		&pSwap,                   // 생성된 스왑 체인
-		&pDevice,                   // 생성된 디바이스
+		&m_pSwap,                   // 생성된 스왑 체인
+		&m_pDevice,                   // 생성된 디바이스
 		nullptr,                // *pFeatureLevel. 가능한 피쳐레벨을 넣어줌. 어떤 피쳐 레벨이 지원되는지 알 필요 없으면 그냥 nullptr.
-		&pContext            // 생성된 디바이스 컨텍스트
+		&m_pContext            // 생성된 디바이스 컨텍스트
 	));
 
 	// 스왑 체인 내부에 들고 있는 텍스쳐 자원(back buffer)에 대한 접근을 얻어옴.
 	Microsoft::WRL::ComPtr<ID3D11Resource> pBackBuffer;
-	GFX_THROW_INFO(pSwap->GetBuffer(0, __uuidof(ID3D11Resource), &pBackBuffer));
-	GFX_THROW_INFO(pDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &pTarget));
+	GFX_THROW_INFO(m_pSwap->GetBuffer(0, __uuidof(ID3D11Resource), &pBackBuffer));
+	GFX_THROW_INFO(m_pDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &m_pTarget));
 
 	// depth stencil state 생성.
 	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
@@ -70,10 +69,10 @@ bool D3DGraphics::Initialize(int screenWidth, int screenHeight, bool vsync, HWND
 	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> pDSState;
-	GFX_THROW_INFO(pDevice->CreateDepthStencilState(&dsDesc, &pDSState));
+	GFX_THROW_INFO(m_pDevice->CreateDepthStencilState(&dsDesc, &pDSState));
 
 	// 출력 병합기에 depth state 묶기.
-	pContext->OMSetDepthStencilState(pDSState.Get(), 1u);
+	m_pContext->OMSetDepthStencilState(pDSState.Get(), 1u);
 
 	// 깊이 스텐실용 텍스쳐 생성.
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> pDepthStencil;
@@ -87,19 +86,44 @@ bool D3DGraphics::Initialize(int screenWidth, int screenHeight, bool vsync, HWND
 	descDepth.SampleDesc.Quality = 0u;
 	descDepth.Usage = D3D11_USAGE_DEFAULT;
 	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	GFX_THROW_INFO(pDevice->CreateTexture2D(&descDepth, nullptr, &pDepthStencil));
+	GFX_THROW_INFO(m_pDevice->CreateTexture2D(&descDepth, nullptr, &pDepthStencil));
 
 	// 깊이 스텐실 텍스쳐에 대한 뷰 생성.
 	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
 	descDSV.Format = DXGI_FORMAT_D32_FLOAT;
 	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	descDSV.Texture2D.MipSlice = 0u;
-	GFX_THROW_INFO(pDevice->CreateDepthStencilView(
-		pDepthStencil.Get(), &descDSV, &pDSV
+	GFX_THROW_INFO(m_pDevice->CreateDepthStencilView(
+		pDepthStencil.Get(), &descDSV, &m_pDSV
 	));
 
 	// 출력 병합기에 렌더 타겟과 깊이 스텐실 뷰 묶기.
-	pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), pDSV.Get());
+	m_pContext->OMSetRenderTargets(1u, m_pTarget.GetAddressOf(), m_pDSV.Get());
+
+	// 뷰포트 설정
+	D3D11_VIEWPORT vp;
+	vp.Width = screenWidth;
+	vp.Height = screenHeight;
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+	vp.TopLeftX = 0.0f;
+	vp.TopLeftY = 0.0f;
+	// 뷰포트들을 rasterizer stage에 묶는다.
+	m_pContext->RSSetViewports(1u, &vp); // 1개의 뷰포트를 세팅
+
+	// 투영 행렬 계산을 위한 값들을 세팅.
+	float fieldOfView, screenAspect;
+	fieldOfView = 3.141592654f / 4.0f;
+	screenAspect = (float)screenWidth / (float)screenHeight;
+
+	// 투영 행렬을 생성.
+	m_projectionMatrix = dx::XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
+
+	// 월드 변환 행렬은 단위 행렬로 만들어줌.
+	m_worldMatrix = dx::XMMatrixIdentity();
+
+	// 직교 투영 행렬.
+	m_orthoMatrix = dx::XMMatrixOrthographicLH((float)screenWidth, (float)screenHeight, screenNear, screenDepth);
 
 	return true;
 }
@@ -111,11 +135,11 @@ void D3DGraphics::EndFrame()
 
 	if (m_vsync_enabled)
 	{
-		if (FAILED(hr = pSwap->Present(1u, 0u)))
+		if (FAILED(hr = m_pSwap->Present(1u, 0u)))
 		{
 			if (hr == DXGI_ERROR_DEVICE_REMOVED) // DXGI_ERROR_DEVICE_REMOVED 에러인 경우에 따로 처리해줌.
 			{
-				throw GFX_DEVICE_REMOVED_EXCEPT(pDevice->GetDeviceRemovedReason());
+				throw GFX_DEVICE_REMOVED_EXCEPT(m_pDevice->GetDeviceRemovedReason());
 			}
 			else
 			{
@@ -125,11 +149,11 @@ void D3DGraphics::EndFrame()
 	}
 	else
 	{
-		if (FAILED(hr = pSwap->Present(0u, 0u)))
+		if (FAILED(hr = m_pSwap->Present(0u, 0u)))
 		{
 			if (hr == DXGI_ERROR_DEVICE_REMOVED) // DXGI_ERROR_DEVICE_REMOVED 에러인 경우에 따로 처리해줌.
 			{
-				throw GFX_DEVICE_REMOVED_EXCEPT(pDevice->GetDeviceRemovedReason());
+				throw GFX_DEVICE_REMOVED_EXCEPT(m_pDevice->GetDeviceRemovedReason());
 			}
 			else
 			{
@@ -143,8 +167,8 @@ void D3DGraphics::EndFrame()
 void D3DGraphics::ClearBuffer(float red, float green, float blue, float alpha) noexcept
 {
 	const float color[] = { red,green,blue,alpha };
-	pContext->ClearRenderTargetView(pTarget.Get(), color); // 렌더 타겟 뷰를 초기화.
-	pContext->ClearDepthStencilView(pDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
+	m_pContext->ClearRenderTargetView(m_pTarget.Get(), color); // 렌더 타겟 뷰를 초기화.
+	m_pContext->ClearDepthStencilView(m_pDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
 }
 
 #pragma region Exception

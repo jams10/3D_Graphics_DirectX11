@@ -51,5 +51,8 @@ void Application::ShutDown()
 
 void Application::Frame()
 {
-	m_pGfx->Frame();
+	timer.Tick();
+	const auto dt = timer.GetDeltaTime();
+
+	m_pGfx->Frame(&m_Wnd.kbd, dt);
 }

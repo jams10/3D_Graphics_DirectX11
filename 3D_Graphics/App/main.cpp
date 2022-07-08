@@ -10,7 +10,7 @@ int CALLBACK WinMain(
 
 	try
 	{
-		App = new Application(L"Graphics", 800, 600);
+		App = new Application(L"Graphics", 1280, 720);
 		if (App == nullptr)
 		{
 			return 0;

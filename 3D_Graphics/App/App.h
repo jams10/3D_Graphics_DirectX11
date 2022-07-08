@@ -3,6 +3,7 @@
 #include <Windows/WindowsHeaders.h>
 #include <Windows/Window.h>
 #include <Graphics/Graphics.h>
+#include <Utils/GameTimer.h>
 #include <string>
 
 class Application
@@ -21,6 +22,7 @@ private:
 private:
 	Window m_Wnd;
 	Graphics* m_pGfx;
+	GameTimer timer;
 	int screenWidth;
 	int screenHeight;
 };

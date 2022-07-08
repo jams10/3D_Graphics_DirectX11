@@ -3,11 +3,15 @@
 #include <Windows/WindowsHeaders.h>
 #include <ErrorHandle/CustomException.h>
 #include <ErrorHandle/DxgiInfoManager.h>
+#include <DirectXMath.h>
 #include <d3d11.h>
 #include <wrl.h>
 
+namespace dx = DirectX;
+
 class D3DGraphics
 {
+	friend class Graphics;
 #pragma region Exception
 public:
 	class Exception : public CustomException
@@ -61,6 +65,15 @@ public:
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue, float alpha) noexcept;
 
+public:
+	ID3D11Device* GetDevice() { return m_pDevice.Get(); }
+	ID3D11DeviceContext* GetContext() { return m_pContext.Get(); }
+	DxgiInfoManager& GetInfoManager() { return infoManager; }
+	
+	dx::XMMATRIX GetProjectionMatrix() { return m_projectionMatrix; }
+	dx::XMMATRIX GetWorldMatrix() { return m_worldMatrix; }
+	dx::XMMATRIX GetOrthMatrix() { return m_orthoMatrix; }
+
 private:
 #ifndef NDEBUG
 	DxgiInfoManager infoManager; // 디버그 모드일 때만 DxgiInfoManager 객체를 들고 있게 함.
@@ -69,9 +82,13 @@ private:
 private:
 	bool m_vsync_enabled;
 
-	Microsoft::WRL::ComPtr<ID3D11Device> pDevice;
-	Microsoft::WRL::ComPtr<IDXGISwapChain> pSwap;
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext> pContext;
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> pTarget;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> pDSV;
+	dx::XMMATRIX m_projectionMatrix;
+	dx::XMMATRIX m_worldMatrix;
+	dx::XMMATRIX m_orthoMatrix;
+
+	Microsoft::WRL::ComPtr<ID3D11Device> m_pDevice;
+	Microsoft::WRL::ComPtr<IDXGISwapChain> m_pSwap;
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_pContext;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_pTarget;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_pDSV;
 };

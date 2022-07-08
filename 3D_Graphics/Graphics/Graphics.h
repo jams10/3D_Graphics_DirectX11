@@ -1,10 +1,16 @@
 #pragma once
 
 #include <Windows/WindowsHeaders.h>
+#include <DirectXMath.h>
 
 const bool VSYNC_ENABLED = true;
 const float SCREEN_DEPTH = 1000.0f;
 const float SCREEN_NEAR = 0.1f;
+
+class D3DGraphics;
+class Camera;
+class Model;
+class SolidColorShader;
 
 class Graphics
 {
@@ -16,11 +22,15 @@ public:
 
 	bool Initialize(int, int, HWND);
 	void Shutdown();
-	bool Frame();
+	bool Frame(class Keyboard* kbd, float dt);
 
 private:
 	bool Render();
 
 private:
-	class D3DGraphics* m_pD3D;
+	D3DGraphics* m_pD3D;
+	Camera* m_pCamera;
+	Model* m_pModel;
+	SolidColorShader* m_pSolidColorShader;
+
 };
