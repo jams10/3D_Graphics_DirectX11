@@ -36,9 +36,6 @@
     <ClCompile Include="Graphics\D3DGraphics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dxerr\dxerr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ErrorHandle\CustomException.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -55,6 +52,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Utils\GameTimer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Surface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\StringUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dxerr\dxerr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\TextureShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -86,9 +98,6 @@
     <ClInclude Include="ErrorHandle\D3DGraphicsExceptionMacros.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dxerr\dxerr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ErrorHandle\CustomException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -107,8 +116,80 @@
     <ClInclude Include="Utils\GameTimer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Utils\Surface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\StringUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\include\dxtex\BC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\include\dxtex\BCDirectCompute.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\include\dxtex\d3dx12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\include\dxtex\DDS.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\include\dxtex\DirectXTex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\include\dxtex\DirectXTexP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\include\dxtex\filters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\include\dxtex\scoped.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\BC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\BCDirectCompute.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\d3dx12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\DDS.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\DirectXTex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\DirectXTexP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\filters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\scoped.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxerr\dxerr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\TextureShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Shaders\SolidColorVS.hlsl" />
+    <FxCompile Include="Shaders\SolidColorPS.hlsl" />
+    <FxCompile Include="Shaders\TextureVS.hlsl" />
+    <FxCompile Include="Shaders\TexturePS.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="dxtex\DirectXTex.inl">
+      <Filter>Header Files</Filter>
+    </None>
     <None Include="dxerr\DXGetErrorDescription.inl">
       <Filter>Header Files</Filter>
     </None>
@@ -118,9 +199,5 @@
     <None Include="dxerr\DXTrace.inl">
       <Filter>Header Files</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Shaders\SolidColorVS.hlsl" />
-    <FxCompile Include="Shaders\SolidColorPS.hlsl" />
   </ItemGroup>
 </Project>

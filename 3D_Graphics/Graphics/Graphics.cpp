@@ -1,6 +1,6 @@
 #include "Graphics.h"
 #include <Graphics/D3DGraphics.h>
-#include <Graphics/SolidColorShader.h>
+#include <Graphics/TextureShader.h>
 #include <ErrorHandle/DxgiInfoManager.h>
 #include <ErrorHandle/CustomException.h>
 #include <ErrorHandle/D3DGraphicsExceptionMacros.h>
@@ -16,7 +16,7 @@ Graphics::Graphics()
     m_pD3D = nullptr;
     m_pCamera = nullptr;
     m_pModel = nullptr;
-    m_pSolidColorShader = nullptr;
+    m_pTextureShader = nullptr;
 }
 
 Graphics::~Graphics()
@@ -29,13 +29,13 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pD3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, Wnd, SCREEN_DEPTH, SCREEN_NEAR);
 
     m_pModel = new Model();
-    m_pModel->Initialize(*m_pD3D);
+    m_pModel->Initialize(*m_pD3D, "Images\\seafloor.png");
 
     m_pCamera = new Camera();
     m_pCamera->SetLocation(0.0f, 0.0f, -5.0f);
 
-    m_pSolidColorShader = new SolidColorShader();
-    m_pSolidColorShader->Initialize(*m_pD3D);
+    m_pTextureShader = new TextureShader();
+    m_pTextureShader->Initialize(*m_pD3D);
 
     return true;
 }
@@ -45,7 +45,7 @@ void Graphics::Shutdown()
     SAFE_RELEASE(m_pD3D)
     SAFE_RELEASE(m_pModel)
     SAFE_RELEASE(m_pCamera)
-    SAFE_RELEASE(m_pSolidColorShader)
+    SAFE_RELEASE(m_pTextureShader)
 }
 
 bool Graphics::Frame(Keyboard* kbd, float dt)
@@ -101,7 +101,7 @@ bool Graphics::Render()
     m_pModel->Bind(*m_pD3D);
 
     // 정점 셰이더에 사용할 상수 버퍼를 각 행렬 데이터로 설정해주고, 셰이더 및 상수 버퍼를 파이프라인에 바인딩 해줌.
-    m_pSolidColorShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection);
+    m_pTextureShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, m_pModel->GetTexture());
 
     // 렌더링된 씬을 화면에 표시.
     m_pD3D->EndFrame();

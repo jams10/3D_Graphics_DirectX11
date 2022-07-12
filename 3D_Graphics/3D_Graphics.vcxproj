@@ -72,6 +72,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(SolutionDir)\lib</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(SolutionDir)\lib</LibraryPath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -108,10 +113,13 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>Debug\DirectXTex.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -123,12 +131,15 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>Release\DirectXTex.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -140,16 +151,36 @@
     <ClCompile Include="Graphics\D3DGraphics.cpp" />
     <ClCompile Include="Graphics\Graphics.cpp" />
     <ClCompile Include="Graphics\SolidColorShader.cpp" />
+    <ClCompile Include="Graphics\Texture.cpp" />
+    <ClCompile Include="Graphics\TextureShader.cpp" />
     <ClCompile Include="Input\Keyboard.cpp" />
     <ClCompile Include="Input\Mouse.cpp" />
     <ClCompile Include="Objects\Camera.cpp" />
     <ClCompile Include="Objects\Model.cpp" />
     <ClCompile Include="Utils\GameTimer.cpp" />
+    <ClCompile Include="Utils\StringUtils.cpp" />
+    <ClCompile Include="Utils\Surface.cpp" />
     <ClCompile Include="Windows\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App\App.h" />
     <ClInclude Include="dxerr\dxerr.h" />
+    <ClInclude Include="dxtex\BC.h" />
+    <ClInclude Include="dxtex\BCDirectCompute.h" />
+    <ClInclude Include="dxtex\d3dx12.h" />
+    <ClInclude Include="dxtex\DDS.h" />
+    <ClInclude Include="dxtex\DirectXTex.h" />
+    <ClInclude Include="dxtex\DirectXTexP.h" />
+    <ClInclude Include="dxtex\filters.h" />
+    <ClInclude Include="dxtex\include\dxtex\BC.h" />
+    <ClInclude Include="dxtex\include\dxtex\BCDirectCompute.h" />
+    <ClInclude Include="dxtex\include\dxtex\d3dx12.h" />
+    <ClInclude Include="dxtex\include\dxtex\DDS.h" />
+    <ClInclude Include="dxtex\include\dxtex\DirectXTex.h" />
+    <ClInclude Include="dxtex\include\dxtex\DirectXTexP.h" />
+    <ClInclude Include="dxtex\include\dxtex\filters.h" />
+    <ClInclude Include="dxtex\include\dxtex\scoped.h" />
+    <ClInclude Include="dxtex\scoped.h" />
     <ClInclude Include="ErrorHandle\CustomException.h" />
     <ClInclude Include="ErrorHandle\D3DGraphicsExceptionMacros.h" />
     <ClInclude Include="ErrorHandle\DxgiInfoManager.h" />
@@ -157,18 +188,17 @@
     <ClInclude Include="Graphics\D3DGraphics.h" />
     <ClInclude Include="Graphics\Graphics.h" />
     <ClInclude Include="Graphics\SolidColorShader.h" />
+    <ClInclude Include="Graphics\Texture.h" />
+    <ClInclude Include="Graphics\TextureShader.h" />
     <ClInclude Include="Input\Keyboard.h" />
     <ClInclude Include="Input\Mouse.h" />
     <ClInclude Include="Objects\Camera.h" />
     <ClInclude Include="Objects\Model.h" />
     <ClInclude Include="Utils\GameTimer.h" />
+    <ClInclude Include="Utils\StringUtils.h" />
+    <ClInclude Include="Utils\Surface.h" />
     <ClInclude Include="Windows\Window.h" />
     <ClInclude Include="Windows\WindowsHeaders.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="dxerr\DXGetErrorDescription.inl" />
-    <None Include="dxerr\DXGetErrorString.inl" />
-    <None Include="dxerr\DXTrace.inl" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\SolidColorVS.hlsl">
@@ -178,6 +208,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\Shaders\%(Filename).cso</ObjectFileOutput>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\Shaders\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
     <FxCompile Include="Shaders\SolidColorPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
@@ -186,7 +217,30 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\Shaders\%(Filename).cso</ObjectFileOutput>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\Shaders\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
+    <FxCompile Include="Shaders\TexturePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\Shaders\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\Shaders\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\TextureVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\Shaders\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\Shaders\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="dxerr\DXGetErrorDescription.inl" />
+    <None Include="dxerr\DXGetErrorString.inl" />
+    <None Include="dxerr\DXTrace.inl" />
+    <None Include="dxtex\DirectXTex.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

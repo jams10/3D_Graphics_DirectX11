@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <ErrorHandle/DxgiInfoManager.h>
 #include <ErrorHandle/D3DGraphicsExceptionMacros.h>
+#include <Graphics/Texture.h>
 
 Model::Model()
     :
@@ -14,14 +15,21 @@ Model::~Model()
 {
 }
 
-void Model::Initialize(D3DGraphics& gfx)
+void Model::Initialize(D3DGraphics& gfx, std::string filePath)
 {
     InitializeBuffers(gfx);
+
+    LoadTexture(gfx, filePath);
 }
 
 void Model::Bind(D3DGraphics& gfx)
 {
     BindBuffers(gfx);
+}
+
+ID3D11ShaderResourceView* Model::GetTexture()
+{
+    return m_pTexture->GetTextureView();
 }
 
 void Model::InitializeBuffers(D3DGraphics& gfx)
@@ -33,8 +41,8 @@ void Model::InitializeBuffers(D3DGraphics& gfx)
     D3D11_SUBRESOURCE_DATA vertexData, indexData;        // 실제 정점, 인덱스 버퍼에 들어갈 데이터
 
     // 정점과 인덱스 개수를 설정.
-    m_vertexCount = 3;
-    m_indexCount = 3;
+    m_vertexCount = 4;
+    m_indexCount = 6;
 
     // 정점 배열 생성
     vertices = new VertexType[m_vertexCount];
@@ -45,18 +53,24 @@ void Model::InitializeBuffers(D3DGraphics& gfx)
 
     // 정점 배열에 정점 데이터를 채워줌.
     vertices[0].position = DirectX::XMFLOAT3(-1.0f, -1.0f, 0.0f);
-    vertices[0].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+    vertices[0].texture = DirectX::XMFLOAT2(0.0f, 1.0f);
 
-    vertices[1].position = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
-    vertices[1].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+    vertices[1].position = DirectX::XMFLOAT3(-1.0f, 1.0f, 0.0f);
+    vertices[1].texture = DirectX::XMFLOAT2(0.0f, 0.0f);
 
-    vertices[2].position = DirectX::XMFLOAT3(1.0f, -1.0f, 0.0f);
-    vertices[2].color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+    vertices[2].position = DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f);
+    vertices[2].texture = DirectX::XMFLOAT2(1.0f, 0.0f);
+
+    vertices[3].position = DirectX::XMFLOAT3(1.0f, -1.0f, 0.0f);
+    vertices[3].texture = DirectX::XMFLOAT2(1.0f, 1.0f);
 
     // 인덱스 배열 채워주기.
     indices[0] = 0;
     indices[1] = 1;
     indices[2] = 2;
+    indices[3] = 2;
+    indices[4] = 3;
+    indices[5] = 0;
 
     // 정적 정점 버퍼의 서술자를 설정.
     vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;  // 버퍼가 어떻게 읽혀지고 쓰여지는지(written) 정의. 
@@ -118,4 +132,18 @@ void Model::BindBuffers(D3DGraphics& gfx)
     gfx.GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     return;
+}
+
+void Model::LoadTexture(D3DGraphics& gfx, std::string filePath)
+{
+    m_pTexture = new Texture(gfx, filePath);
+}
+
+void Model::ReleaseTexture()
+{
+    if (m_pTexture)
+    {
+        delete m_pTexture;
+        m_pTexture = nullptr;
+    }
 }
