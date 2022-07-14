@@ -2,6 +2,7 @@
 
 #include <queue>
 #include <bitset>
+#include <optional>
 
 // Keyboard : 키보드 입력을 처리해주는 클래스.
 class Keyboard
@@ -56,12 +57,12 @@ public:
 	Keyboard& operator=(const Keyboard&) = delete;
 #pragma region KeyEvent
 	bool KeyIsPressed(unsigned char keycode) const noexcept;
-	Event ReadKey() noexcept;
+	std::optional<Event> ReadKey() noexcept;
 	bool KeyIsEmpty() const noexcept;
 	void FlushKey() noexcept;
 #pragma endregion
 #pragma region CharEvent
-	char ReadChar() noexcept;
+	std::optional<char> ReadChar() noexcept;
 	bool CharIsEmpty() const noexcept;
 	void FlushChar() noexcept;
 	void Flush() noexcept; // key, char를 둘다 flush

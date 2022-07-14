@@ -49,35 +49,8 @@ void Graphics::Shutdown()
     SAFE_RELEASE(m_pTextureShader)
 }
 
-bool Graphics::Frame(Keyboard* kbd, float dt)
+bool Graphics::Frame()
 {
-    dx::XMFLOAT3 pos = m_pCamera->GetLocation();
-    dx::XMFLOAT3 rot = m_pCamera->GetRotation();
-    if (kbd->KeyIsPressed('W'))
-    {
-        m_pCamera->SetLocation(pos.x, pos.y, pos.z + 20.0f * dt);
-    }
-    if (kbd->KeyIsPressed('S'))
-    {
-        m_pCamera->SetLocation(pos.x, pos.y, pos.z - 20.0f * dt);
-    }
-    if (kbd->KeyIsPressed('A'))
-    {
-        m_pCamera->SetLocation(pos.x - 20.0f * dt, pos.y, pos.z);
-    }
-    if (kbd->KeyIsPressed('D'))
-    {
-        m_pCamera->SetLocation(pos.x + 20.0f * dt, pos.y, pos.z);
-    }
-    if (kbd->KeyIsPressed('Q'))
-    {
-        m_pCamera->SetRotation(rot.x, rot.y, rot.z - 20.0f * dt);
-    }
-    if (kbd->KeyIsPressed('E'))
-    {
-        m_pCamera->SetRotation(rot.x, rot.y, rot.z + 20.0f * dt);
-    }
-
     if (!Render())
     {
         return false;

@@ -84,6 +84,17 @@ Window::Window(const wchar_t* name, int width, int height)
 
 	// Imgui Win32 구현 초기화.
 	ImGui_ImplWin32_Init(hWnd);
+
+	// 마우스 raw input을 얻기 위해 마우스를 타겟으로 하는 raw input device 등록.
+	RAWINPUTDEVICE rid;
+	rid.usUsagePage = 0x01;  // mouse page
+	rid.usUsage = 0x02;      // mouse usage
+	rid.dwFlags = 0;
+	rid.hwndTarget = nullptr;
+	if (RegisterRawInputDevices(&rid, 1, sizeof(rid)) == FALSE)
+	{
+		throw WND_LAST_EXCEPT();
+	}
 }
 
 // Window 클래스 소멸자. 생성한 윈도우 파괴.
@@ -96,7 +107,7 @@ Window::~Window()
 void Window::EnableCursor()
 {
 	cursorEnabled = true;
-	//ShowCursor();
+	ShowCursor();
 	EnableImGuiMouse();
 	FreeCursor();
 }
@@ -104,7 +115,7 @@ void Window::EnableCursor()
 void Window::DisableCursor()
 {
 	cursorEnabled = false;
-	//HideCursor();
+	HideCursor();
 	DisableImGuiMouse();
 	ConfineCursor();
 }
@@ -228,7 +239,6 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		kbd.ClearState();
 		break;
 	case WM_ACTIVATE:
-		// confine/free cursor on window to foreground/background if cursor disabled
 		if (!cursorEnabled)
 		{
 			if (wParam & WA_ACTIVE)
@@ -401,6 +411,47 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		const POINTS pt = MAKEPOINTS(lParam);
 		const int delta = GET_WHEEL_DELTA_WPARAM(wParam);
 		mouse.OnWheelDelta(pt.x, pt.y, delta);
+		break;
+	}
+#pragma endregion
+#pragma region RawMouseMSG
+	case WM_INPUT:
+	{
+		if (!mouse.RawEnabled()) // Raw Input을 끈 상태면 메시지 처리하지 않고 넘어감.
+		{
+			break;
+		}
+		UINT size;
+		// 입력 데이터를 저장할 위치를 nullptr로 넘겨 입력 데이터의 사이즈를 얻어옴.
+		if (GetRawInputData(
+			reinterpret_cast<HRAWINPUT>(lParam),
+			RID_INPUT,
+			nullptr,
+			&size,
+			sizeof(RAWINPUTHEADER)) == -1)
+		{
+			// 에러인 경우 그냥 메시지 처리를 하지 않고 넘어감.
+			break;
+		}
+		rawBuffer.resize(size);
+		// 앞에서 얻어온 크기를 활용하여 입력 데이터를 읽어오기.
+		if (GetRawInputData(
+			reinterpret_cast<HRAWINPUT>(lParam),
+			RID_INPUT,
+			rawBuffer.data(),
+			&size,
+			sizeof(RAWINPUTHEADER)) != size)
+		{
+			// 에러인 경우 그냥 메시지 처리를 하지 않고 넘어감.
+			break;
+		}
+		// raw input 데이터를 처리해줌.
+		auto& ri = reinterpret_cast<const RAWINPUT&>(*rawBuffer.data()); // 바이트 배열에 담긴 raw input 데이터를 RAWINPUT 구조체로 캐스팅.
+		if (ri.header.dwType == RIM_TYPEMOUSE &&                                      // 해당 RAWINPUT 구조체의 데이터에 접근. 마우스 타입일 경우 마우스 클래스 인스턴스의 OnRawDelta 함수를 호출하여 입력을 넣어줌.
+			(ri.data.mouse.lLastX != 0 || ri.data.mouse.lLastY != 0))
+		{
+			mouse.OnRawDelta(ri.data.mouse.lLastX, ri.data.mouse.lLastY);
+		}
 		break;
 	}
 #pragma endregion

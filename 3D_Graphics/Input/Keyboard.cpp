@@ -7,7 +7,7 @@ bool Keyboard::KeyIsPressed(unsigned char keycode) const noexcept
 }
 
 // 키 Event 버퍼에 저장된 가장 오래된 Event를 꺼내 리턴해주는 함수.
-Keyboard::Event Keyboard::ReadKey() noexcept
+std::optional<Keyboard::Event> Keyboard::ReadKey() noexcept
 {
 	if (keybuffer.size() > 0u)
 	{
@@ -15,10 +15,7 @@ Keyboard::Event Keyboard::ReadKey() noexcept
 		keybuffer.pop();
 		return e;
 	}
-	else
-	{
-		return Keyboard::Event();
-	}
+	return {};
 }
 
 // 키 Event 버퍼가 비었는지 여부를 리턴해주는 함수.
@@ -28,7 +25,7 @@ bool Keyboard::KeyIsEmpty() const noexcept
 }
 
 // 키 char 버퍼에 있는 가장 오래된 char 값을 꺼내 리턴해주는 함수.
-char Keyboard::ReadChar() noexcept
+std::optional<char> Keyboard::ReadChar() noexcept
 {
 	if (charbuffer.size() > 0u)
 	{
@@ -36,10 +33,7 @@ char Keyboard::ReadChar() noexcept
 		charbuffer.pop();
 		return charcode;
 	}
-	else
-	{
-		return 0;
-	}
+	return {};
 }
 
 // 키 char 버퍼가 비었는지 여부를 리턴해주는 함수.

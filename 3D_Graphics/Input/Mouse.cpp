@@ -7,6 +7,18 @@ std::pair<int, int> Mouse::GetPos() const noexcept
 	return { x,y };
 }
 
+// Raw Input(마우스 이동 delta 값)버퍼에 있는 값을 읽어오는 함수.
+std::optional<Mouse::RawDelta> Mouse::ReadRawDelta() noexcept
+{
+	if (rawDeltaBuffer.empty())
+	{
+		return std::nullopt;
+	}
+	const RawDelta d = rawDeltaBuffer.front();
+	rawDeltaBuffer.pop();
+	return d;
+}
+
 // 마우스 X 좌표를 리턴하는 함수.
 int Mouse::GetPosX() const noexcept
 {
@@ -58,6 +70,21 @@ void Mouse::Flush() noexcept
 	buffer = std::queue<Event>();
 }
 
+void Mouse::EnableRaw() noexcept
+{
+	rawEnabled = true;
+}
+
+void Mouse::DisableRaw() noexcept
+{
+	rawEnabled = false;
+}
+
+bool Mouse::RawEnabled() const noexcept
+{
+	return rawEnabled;
+}
+
 // 마우스가 움직인 경우, 마우스 좌표를 갱신하고 마우스 Event 버퍼에 Move Event를 넣어주는 함수.
 void Mouse::OnMouseMove(int newx, int newy) noexcept
 {
@@ -81,6 +108,13 @@ void Mouse::OnMouseEnter() noexcept
 {
 	isInWindow = true;
 	buffer.push(Mouse::Event(Mouse::Event::Type::Enter, *this));
+	TrimBuffer();
+}
+
+// Raw Input 버퍼에 새 delta 데이터를 넣어주는 함수.
+void Mouse::OnRawDelta(int dx, int dy) noexcept
+{
+	rawDeltaBuffer.push({ dx,dy });
 	TrimBuffer();
 }
 
@@ -140,6 +174,15 @@ void Mouse::TrimBuffer() noexcept
 	while (buffer.size() > bufferSize)
 	{
 		buffer.pop();
+	}
+}
+
+// Raw Input 버퍼 정리 함수.
+void Mouse::TrimRawInputBuffer() noexcept
+{
+	while (rawDeltaBuffer.size() > bufferSize)
+	{
+		rawDeltaBuffer.pop();
 	}
 }
 

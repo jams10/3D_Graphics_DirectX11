@@ -67,6 +67,7 @@ public:
 
 	void EnableCursor();
 	void DisableCursor();
+	bool CursorEnabled() const { return cursorEnabled; }
 private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 	static LRESULT CALLBACK HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
@@ -85,5 +86,6 @@ private:
 	int screenWidth;
 	int screenHeight;
 	HWND hWnd;
-	bool cursorEnabled = false;
+	bool cursorEnabled = true;
+	std::vector<BYTE> rawBuffer;
 };

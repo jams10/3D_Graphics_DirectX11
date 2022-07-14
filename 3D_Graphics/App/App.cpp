@@ -54,5 +54,29 @@ void Application::Frame()
 	timer.Tick();
 	const auto dt = timer.GetDeltaTime();
 
-	m_pGfx->Frame(&m_Wnd.kbd, dt);
+	while (const auto e = m_Wnd.kbd.ReadKey())
+	{
+		if (!e->IsPress())
+		{
+			continue;
+		}
+
+		switch (e->GetCode())
+		{
+		case VK_TAB:
+			if (m_Wnd.CursorEnabled())
+			{
+				m_Wnd.DisableCursor();
+				m_Wnd.mouse.EnableRaw();
+			}
+			else
+			{
+				m_Wnd.EnableCursor();
+				m_Wnd.mouse.DisableRaw();
+			}
+			break;
+		}
+	}
+
+	m_pGfx->Frame();
 }

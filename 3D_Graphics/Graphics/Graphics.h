@@ -22,7 +22,9 @@ public:
 
 	bool Initialize(int, int, HWND);
 	void Shutdown();
-	bool Frame(class Keyboard* kbd, float dt);
+	bool Frame();
+
+	Camera* GetCamera() { return m_pCamera; }
 
 private:
 	bool Render();
