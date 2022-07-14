@@ -104,12 +104,6 @@ bool Graphics::Render()
     // 정점 셰이더에 사용할 상수 버퍼를 각 행렬 데이터로 설정해주고, 셰이더 및 상수 버퍼를 파이프라인에 바인딩 해줌.
     m_pTextureShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, m_pModel->GetTexture());
 
-    static bool show_demo_window = true;
-    if (show_demo_window)
-    {
-        ImGui::ShowDemoWindow(&show_demo_window);
-    }
-
     // 렌더링된 씬을 화면에 표시.
     m_pD3D->EndFrame();
 
