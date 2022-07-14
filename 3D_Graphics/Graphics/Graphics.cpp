@@ -33,7 +33,6 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pModel->Initialize(*m_pD3D, "Images\\seafloor.png");
 
     m_pCamera = new Camera();
-    m_pCamera->SetLocation(0.0f, 0.0f, -5.0f);
 
     m_pTextureShader = new TextureShader();
     m_pTextureShader->Initialize(*m_pD3D);
@@ -63,9 +62,6 @@ bool Graphics::Render()
 {
     m_pD3D->BeginFrame(0.5f, 0.5f, 0.5f, 1.f);
 
-    // 카메라의 현재 위치에 따른 뷰 변환 행렬을 계속해서 갱신.
-    m_pCamera->Update();
-
     // 월드, 뷰, 투영 행렬을 얻어옴.
     dx::XMMATRIX world = m_pD3D->GetWorldMatrix();
     dx::XMMATRIX view = m_pCamera->GetViewMatrix();
@@ -76,6 +72,8 @@ bool Graphics::Render()
 
     // 정점 셰이더에 사용할 상수 버퍼를 각 행렬 데이터로 설정해주고, 셰이더 및 상수 버퍼를 파이프라인에 바인딩 해줌.
     m_pTextureShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, m_pModel->GetTexture());
+
+    m_pCamera->SpawnControlWindow();
 
     // 렌더링된 씬을 화면에 표시.
     m_pD3D->EndFrame();

@@ -7,20 +7,16 @@ namespace dx = DirectX;
 class Camera
 {
 public:
-	Camera();
-	~Camera();
-
-	void SetLocation(float x, float y, float z);
-	void SetRotation(float x, float y, float z);
-
-	dx::XMFLOAT3 GetLocation();
-	dx::XMFLOAT3 GetRotation();
-
-	void Update();
-	dx::XMMATRIX GetViewMatrix();
-
+	Camera() noexcept;
+	DirectX::XMMATRIX GetViewMatrix() const noexcept;
+	void SpawnControlWindow() noexcept;
+	void Reset() noexcept;
+	void Rotate(float dx, float dy) noexcept;               // 회전 함수
+	void Translate(DirectX::XMFLOAT3 translation) noexcept; // 평행이동 함수
 private:
-	float m_locationX, m_locationY, m_locationZ;
-	float m_rotationX, m_rotationY, m_rotationZ;
-	dx::XMMATRIX m_viewMatrix;
+	DirectX::XMFLOAT3 pos;
+	float pitch; // x축 회전 값 
+	float yaw;   // y축 회전 값
+	static constexpr float travelSpeed = 12.0f;
+	static constexpr float rotationSpeed = 0.004f;
 };

@@ -1,93 +1,73 @@
 #include "Camera.h"
+#include <imgui/imgui.h>
+#include <Utils/CustomMath.h>
+#include <algorithm>
 
-Camera::Camera()
+Camera::Camera() noexcept
 {
-	m_locationX = 0.0f;
-	m_locationY = 0.0f;
-	m_locationZ = 0.0f;
-
-	m_rotationX = 0.0f;
-	m_rotationY = 0.0f;
-	m_rotationZ = 0.0f;
-
-	m_viewMatrix = dx::XMMatrixIdentity();
+	Reset();
 }
 
-Camera::~Camera()
+DirectX::XMMATRIX Camera::GetViewMatrix() const noexcept
 {
+	const DirectX::XMVECTOR forwardBaseVector = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+
+	// 앞 양의 z축 방향을 바라보는 기본 벡터에 카메라의 회전 값을 적용해줌.
+	const auto lookVector = DirectX::XMVector3Transform(forwardBaseVector,
+		DirectX::XMMatrixRotationRollPitchYaw(pitch, yaw, 0.0f)
+	);
+
+	// 카메라 변환 행렬을 만들어줌.
+	// 해당 행렬은 모든 오브젝트에 적용되며, 모든 오브젝트들이 카메라의 위치와 회전 기준으로 놓여지게 함. 즉, 뷰 변환 행렬.
+	// 이 때, 카메라의 위를 향하는 벡터를 항상 양의 y축 방향이 되게 하여 오브젝트들이 barrel roll 되는 현상을 막아줌. roll 축을 (0,1,0)에 맞추어 최대한 y축에 정렬 되도록 함.
+	const auto camPosition = DirectX::XMLoadFloat3(&pos);
+	const auto camTarget = DirectX::XMVectorAdd(camPosition, lookVector); // 카메라 위치에 바라보는 방향 벡터를 더한 것이 타겟 위치가 됨.
+	return DirectX::XMMatrixLookAtLH(camPosition, camTarget, DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 }
 
-void Camera::SetLocation(float x, float y, float z)
+// 카메라 컨트롤 ui 생성 함수.
+void Camera::SpawnControlWindow() noexcept
 {
-	m_locationX = x;
-	m_locationY = y;
-	m_locationZ = z;
-	return;
+	if (ImGui::Begin("Camera"))
+	{
+		ImGui::Text("Position");
+		ImGui::SliderFloat("X", &pos.x, -80.0f, 80.0f, "%.1f");
+		ImGui::SliderFloat("Y", &pos.y, -80.0f, 80.0f, "%.1f");
+		ImGui::SliderFloat("Z", &pos.z, -80.0f, 80.0f, "%.1f");
+		ImGui::Text("Orientation");
+		ImGui::SliderAngle("Pitch", &pitch, 0.995f * -90.0f, 0.995f * 90.0f); // 0.995를 곱해 완전히 90도가 되지 않도록함.
+		ImGui::SliderAngle("Yaw", &yaw, -180.0f, 180.0f);
+		if (ImGui::Button("Reset"))
+		{
+			Reset();
+		}
+	}
+	ImGui::End();
 }
 
-void Camera::SetRotation(float x, float y, float z)
+void Camera::Reset() noexcept
 {
-	m_rotationX = x;
-	m_rotationY = y;
-	m_rotationZ = z;
-	return;
+	pos = { 0.0f,0.0f,-2.0f };
+	pitch = 0.0f;
+	yaw = 0.0f;
 }
 
-dx::XMFLOAT3 Camera::GetLocation()
+void Camera::Rotate(float dx, float dy) noexcept
 {
-	return dx::XMFLOAT3(m_locationX, m_locationY, m_locationZ);
+	yaw = wrap_angle(yaw + dx * rotationSpeed); // y축 회전 값을 -180 ~ 180 값으로 제한해줌.
+	pitch = std::clamp(pitch + dy * rotationSpeed, 0.995f * -PI / 2.0f, 0.995f * PI / 2.0f);
 }
 
-dx::XMFLOAT3 Camera::GetRotation()
+void Camera::Translate(DirectX::XMFLOAT3 translation) noexcept
 {
-	return dx::XMFLOAT3(m_rotationX, m_rotationY, m_rotationZ);
-}
-
-void Camera::Update()
-{
-	dx::XMFLOAT3 up, position, lookAt;
-	dx::XMVECTOR upVector, positionVector, lookAtVector;
-	float yaw, pitch, roll;
-	dx::XMMATRIX rotationMatrix;
-
-	// 위쪽 방향을 가리키는 up 벡터를 설정.
-	up.x = 0.0f;
-	up.y = 1.0f;
-	up.z = 0.0f;
-	upVector = XMLoadFloat3(&up); // XMFLOAT3 타입을 XMVECTOR 구조체에 로드함.
-
-	// 월드 공간에서의 카메라 위치를 나타내는 벡터를 설정.
-	position.x = m_locationX;
-	position.y = m_locationY;
-	position.z = m_locationZ;
-	positionVector = XMLoadFloat3(&position);
-
-	// 카메라가 바라보는 대상의 위치를 나타내는 벡터를 설정.
-	lookAt.x = 0.0f;
-	lookAt.y = 0.0f;
-	lookAt.z = 1.0f;
-	lookAtVector = XMLoadFloat3(&lookAt);
-
-	// 60분법의 각도 값을 라디안 값으로 바꿔줌.
-	pitch = m_rotationX * 0.0174532925f;
-	yaw = m_rotationY * 0.0174532925f;
-	roll = m_rotationZ * 0.0174532925f;
-
-	// pitch, yaw, roll 값을 따라 회전하는 회전 행렬을 생성.
-	rotationMatrix = dx::XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
-
-	// 카메라가 원점에서 올바르게 회전 되도록 위에서 구해준 회전 행렬로 lookAt 및 up 벡터를 변환함.
-	lookAtVector = dx::XMVector3TransformCoord(lookAtVector, rotationMatrix);
-	//upVector = dx::XMVector3TransformCoord(upVector, rotationMatrix);
-
-	// 카메라가 바라보는 대상이 되는 벡터를 카메라 위치 기준으로 이동함.
-	lookAtVector = dx::XMVectorAdd(positionVector, lookAtVector);
-
-	// 세 벡터를 통해 view 변환 행렬을 만들어줌.
-	m_viewMatrix = dx::XMMatrixLookAtLH(positionVector, lookAtVector, upVector);
-}
-
-dx::XMMATRIX Camera::GetViewMatrix()
-{
-	return m_viewMatrix;
+	DirectX::XMStoreFloat3(&translation, DirectX::XMVector3Transform(
+		DirectX::XMLoadFloat3(&translation),
+		DirectX::XMMatrixRotationRollPitchYaw(pitch, yaw, 0.0f) *
+		DirectX::XMMatrixScaling(travelSpeed, travelSpeed, travelSpeed)
+	));
+	pos = {
+		pos.x + translation.x,
+		pos.y + translation.y,
+		pos.z + translation.z
+	};
 }

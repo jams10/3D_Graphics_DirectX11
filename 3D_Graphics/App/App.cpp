@@ -1,4 +1,5 @@
 #include "App.h"
+#include <Objects/Camera.h>
 
 Application::Application(std::wstring title, int screenWidth, int screenHeight)
 	:
@@ -77,6 +78,44 @@ void Application::Frame()
 			break;
 		}
 	}
+
+#pragma region CameraMove
+	if (!m_Wnd.CursorEnabled())
+	{
+		if (m_Wnd.kbd.KeyIsPressed('W'))
+		{
+			m_pGfx->GetCamera()->Translate({ 0.0f,0.0f,dt });
+		}
+		if (m_Wnd.kbd.KeyIsPressed('A'))
+		{
+			m_pGfx->GetCamera()->Translate({ -dt,0.0f,0.0f });
+		}
+		if (m_Wnd.kbd.KeyIsPressed('S'))
+		{
+			m_pGfx->GetCamera()->Translate({ 0.0f,0.0f,-dt });
+		}
+		if (m_Wnd.kbd.KeyIsPressed('D'))
+		{
+			m_pGfx->GetCamera()->Translate({ dt,0.0f,0.0f });
+		}
+		if (m_Wnd.kbd.KeyIsPressed('R'))
+		{
+			m_pGfx->GetCamera()->Translate({ 0.0f,dt,0.0f });
+		}
+		if (m_Wnd.kbd.KeyIsPressed('F'))
+		{
+			m_pGfx->GetCamera()->Translate({ 0.0f,-dt,0.0f });
+		}
+	}
+
+	while (const auto delta = m_Wnd.mouse.ReadRawDelta())
+	{
+		if (!m_Wnd.CursorEnabled())
+		{
+			m_pGfx->GetCamera()->Rotate(delta->x, delta->y);
+		}
+	}
+#pragma endregion
 
 	m_pGfx->Frame();
 }
