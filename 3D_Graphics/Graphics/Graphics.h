@@ -32,5 +32,4 @@ private:
 	Camera* m_pCamera;
 	Model* m_pModel;
 	TextureShader* m_pTextureShader;
-
 };

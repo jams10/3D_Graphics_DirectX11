@@ -58,12 +58,12 @@ public:
 	D3DGraphics();
 	D3DGraphics(const D3DGraphics&) = delete;
 	D3DGraphics& operator=(const D3DGraphics&) = delete;
-	~D3DGraphics() = default; // ComPtr을 사용하게 되면서 Com 객체들이 알아서 Release 되므로 기본 소멸자로 바꿔줌.
+	~D3DGraphics();
 	
 	bool Initialize(int screenWidth, int screenHeight, bool vsync, HWND hWnd, float screenDepth, float screenNear);
 
+	void BeginFrame(float red, float green, float blue, float alpha) noexcept;
 	void EndFrame();
-	void ClearBuffer(float red, float green, float blue, float alpha) noexcept;
 
 public:
 	ID3D11Device* GetDevice() { return m_pDevice.Get(); }
@@ -81,6 +81,7 @@ private:
 
 private:
 	bool m_vsync_enabled;
+	bool imguiEnabled;
 
 	dx::XMMATRIX m_projectionMatrix;
 	dx::XMMATRIX m_worldMatrix;

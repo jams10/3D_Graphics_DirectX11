@@ -1,6 +1,7 @@
 #include "Window.h"
 #include <ErrorHandle/WindowsExceptionMacros.h>
 #include <sstream>
+#include <imgui/imgui_impl_win32.h>
 
 #pragma region WindowClass
 // 윈도우 클래스
@@ -75,16 +76,20 @@ Window::Window(const wchar_t* name, int width, int height)
 	// 윈도우 생성에 실패한 경우
 	if (hWnd == nullptr)
 	{
-		//throw WND_LAST_EXCEPT();
+		throw WND_LAST_EXCEPT();
 	}
 
 	// 윈도우 화면에 띄우기.
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
+
+	// Imgui Win32 구현 초기화.
+	ImGui_ImplWin32_Init(hWnd);
 }
 
 // Window 클래스 소멸자. 생성한 윈도우 파괴.
 Window::~Window()
 {
+	ImGui_ImplWin32_Shutdown();
 	DestroyWindow(hWnd);
 }
 
@@ -156,6 +161,12 @@ LRESULT CALLBACK Window::HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 // 실제 윈도우 메시지를 처리해 줄 함수.
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
+	// 윈도우 메시지가 들어오면, imgui가 먼저 처리하도록 함. (먼저 맛을 봄.)
+	// 그래서, 그래서 해당 메시지를 imgui의 프로시져가 처리하게 되면(true를 리턴) 우리의 HandleMsg에서는 처리할 게 없으므로, 바로 리턴해서 프로시져 빠져나감.
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
+	{
+		return true;
+	}
 	switch (msg)
 	{
 	case WM_CLOSE:

@@ -78,7 +78,7 @@ void Camera::Update()
 
 	// 카메라가 원점에서 올바르게 회전 되도록 위에서 구해준 회전 행렬로 lookAt 및 up 벡터를 변환함.
 	lookAtVector = dx::XMVector3TransformCoord(lookAtVector, rotationMatrix);
-	upVector = dx::XMVector3TransformCoord(upVector, rotationMatrix);
+	//upVector = dx::XMVector3TransformCoord(upVector, rotationMatrix);
 
 	// 카메라가 바라보는 대상이 되는 벡터를 카메라 위치 기준으로 이동함.
 	lookAtVector = dx::XMVectorAdd(positionVector, lookAtVector);

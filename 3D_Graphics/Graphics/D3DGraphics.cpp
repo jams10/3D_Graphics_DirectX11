@@ -2,6 +2,8 @@
 #include <dxerr/dxerr.h>
 #include <sstream>
 #include <ErrorHandle/D3DGraphicsExceptionMacros.h>
+#include <imgui/imgui_impl_dx11.h>
+#include <imgui/imgui_impl_win32.h>
 
 #include <d3dcompiler.h>
 
@@ -10,6 +12,12 @@
 
 D3DGraphics::D3DGraphics()
 {
+	imguiEnabled = true;
+}
+
+D3DGraphics::~D3DGraphics()
+{
+	ImGui_ImplDX11_Shutdown();
 }
 
 bool D3DGraphics::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hWnd, float screenDepth, float screenNear)
@@ -125,13 +133,44 @@ bool D3DGraphics::Initialize(int screenWidth, int screenHeight, bool vsync, HWND
 	// 직교 투영 행렬.
 	m_orthoMatrix = dx::XMMatrixOrthographicLH((float)screenWidth, (float)screenHeight, screenNear, screenDepth);
 
+	// imgui dx11 구현 초기화.
+	ImGui_ImplDX11_Init(m_pDevice.Get(), m_pContext.Get());
+
 	return true;
+}
+
+// 새 프레임을 그리기 위해 화면을 정리. 각종 버퍼를 초기화해주는 함수.
+void D3DGraphics::BeginFrame(float red, float green, float blue, float alpha) noexcept
+{
+	// 출력 병합기에 렌더 타겟과 깊이 스텐실 뷰 묶기.
+	m_pContext->OMSetRenderTargets(1u, m_pTarget.GetAddressOf(), m_pDSV.Get());
+
+	// Imgui를 사용한 UI들을 그리기 위한 새 프레임을 생성.
+	if (imguiEnabled)
+	{
+		ImGui_ImplDX11_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
+	}
+
+	const float color[] = { red,green,blue,alpha };
+	m_pContext->ClearRenderTargetView(m_pTarget.Get(), color); // 렌더 타겟 뷰를 초기화.
+	m_pContext->ClearDepthStencilView(m_pDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
 }
 
 // 프레임 최종 결과 단계를 의미하는 함수. 프레임 끝에 처리해 줄 것들을 담고 있음.(스왑 체인 Present)
 void D3DGraphics::EndFrame()
 {
 	HRESULT hr;
+
+	// Imgui를 사용한 UI들을 화면에 렌더링.
+	if (imguiEnabled)
+	{
+		ImGui::Render();
+		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+		ImGui::UpdatePlatformWindows(); // Imgui 창을 업데이트 하고 화면에 보여줌.
+		ImGui::RenderPlatformWindowsDefault();
+	}
 
 	if (m_vsync_enabled)
 	{
@@ -161,14 +200,6 @@ void D3DGraphics::EndFrame()
 			}
 		}
 	}
-}
-
-// 새 프레임을 그리기 위해 화면을 정리. 각종 버퍼를 초기화해주는 함수.
-void D3DGraphics::ClearBuffer(float red, float green, float blue, float alpha) noexcept
-{
-	const float color[] = { red,green,blue,alpha };
-	m_pContext->ClearRenderTargetView(m_pTarget.Get(), color); // 렌더 타겟 뷰를 초기화.
-	m_pContext->ClearDepthStencilView(m_pDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
 }
 
 #pragma region Exception

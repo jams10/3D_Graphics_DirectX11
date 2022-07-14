@@ -4,6 +4,7 @@
 #include <Windows/Window.h>
 #include <Graphics/Graphics.h>
 #include <Utils/GameTimer.h>
+#include <Utils/ImguiManager.h>
 #include <string>
 
 class Application
@@ -20,6 +21,7 @@ private:
 	void Frame();
 
 private:
+	ImguiManager imgui;
 	Window m_Wnd;
 	Graphics* m_pGfx;
 	GameTimer timer;
