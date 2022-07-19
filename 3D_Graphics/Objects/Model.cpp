@@ -1,5 +1,6 @@
 #include "Model.h"
 #include <stdexcept>
+#include <imgui/imgui.h>
 #include <ErrorHandle/DxgiInfoManager.h>
 #include <ErrorHandle/D3DGraphicsExceptionMacros.h>
 #include <Graphics/Texture.h>
@@ -9,6 +10,7 @@ Model::Model()
     m_vertexCount(0),
     m_indexCount(0)
 {
+    Reset();
 }
 
 Model::~Model()
@@ -54,15 +56,19 @@ void Model::InitializeBuffers(D3DGraphics& gfx)
     // 정점 배열에 정점 데이터를 채워줌.
     vertices[0].position = DirectX::XMFLOAT3(-1.0f, -1.0f, 0.0f);
     vertices[0].texture = DirectX::XMFLOAT2(0.0f, 1.0f);
+    vertices[0].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
 
     vertices[1].position = DirectX::XMFLOAT3(-1.0f, 1.0f, 0.0f);
     vertices[1].texture = DirectX::XMFLOAT2(0.0f, 0.0f);
+    vertices[1].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
 
     vertices[2].position = DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f);
     vertices[2].texture = DirectX::XMFLOAT2(1.0f, 0.0f);
+    vertices[2].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
 
     vertices[3].position = DirectX::XMFLOAT3(1.0f, -1.0f, 0.0f);
     vertices[3].texture = DirectX::XMFLOAT2(1.0f, 1.0f);
+    vertices[3].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
 
     // 인덱스 배열 채워주기.
     indices[0] = 0;
@@ -146,4 +152,39 @@ void Model::ReleaseTexture()
         delete m_pTexture;
         m_pTexture = nullptr;
     }
+}
+
+DirectX::XMMATRIX Model::GetWorldMatrix() const noexcept
+{
+    DirectX::XMMATRIX mat = DirectX::XMMatrixIdentity();
+
+    mat *= (DirectX::XMMatrixRotationX(pitch) * DirectX::XMMatrixRotationY(yaw) * DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z));
+
+    return mat;
+}
+
+void Model::SpawnControlWindow() noexcept
+{
+    if (ImGui::Begin("Model"))
+    {
+        ImGui::Text("Position");
+        ImGui::SliderFloat("X", &pos.x, -80.0f, 80.0f, "%.1f");
+        ImGui::SliderFloat("Y", &pos.y, -80.0f, 80.0f, "%.1f");
+        ImGui::SliderFloat("Z", &pos.z, -80.0f, 80.0f, "%.1f");
+        ImGui::Text("Orientation");
+        ImGui::SliderAngle("Pitch", &pitch, -180.0f, 180.0f);
+        ImGui::SliderAngle("Yaw", &yaw, -180.0f, 180.0f);
+        if (ImGui::Button("Reset"))
+        {
+            Reset();
+        }
+    }
+    ImGui::End();
+}
+
+void Model::Reset()
+{
+    pos = { 0.0f, 0.0f, 0.0f };
+    pitch = 0.f;
+    yaw = 0.0f;
 }

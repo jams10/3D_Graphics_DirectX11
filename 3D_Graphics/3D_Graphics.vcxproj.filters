@@ -48,7 +48,7 @@
     <ClCompile Include="Objects\Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Graphics\SolidColorShader.cpp">
+    <ClCompile Include="Shaders\SolidColorShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Utils\GameTimer.cpp">
@@ -66,7 +66,7 @@
     <ClCompile Include="Graphics\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Graphics\TextureShader.cpp">
+    <ClCompile Include="Shaders\TextureShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="imgui\imgui.cpp">
@@ -91,6 +91,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Utils\ImguiMananger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Shaders\LightShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Objects\Light.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -134,7 +140,7 @@
     <ClInclude Include="Objects\Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics\SolidColorShader.h">
+    <ClInclude Include="Shaders\SolidColorShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Utils\GameTimer.h">
@@ -200,7 +206,7 @@
     <ClInclude Include="Graphics\Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics\TextureShader.h">
+    <ClInclude Include="Shaders\TextureShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imconfig.h">
@@ -233,12 +239,20 @@
     <ClInclude Include="Utils\CustomMath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shaders\LightShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects\Light.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\SolidColorVS.hlsl" />
     <FxCompile Include="Shaders\SolidColorPS.hlsl" />
     <FxCompile Include="Shaders\TextureVS.hlsl" />
     <FxCompile Include="Shaders\TexturePS.hlsl" />
+    <FxCompile Include="Shaders\DiffuseLightingVS.hlsl" />
+    <FxCompile Include="Shaders\DiffuseLightingPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dxtex\DirectXTex.inl">
