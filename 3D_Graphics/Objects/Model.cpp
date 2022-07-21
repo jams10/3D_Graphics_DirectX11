@@ -3,13 +3,17 @@
 #include <imgui/imgui.h>
 #include <ErrorHandle/DxgiInfoManager.h>
 #include <ErrorHandle/D3DGraphicsExceptionMacros.h>
+#include <ErrorHandle/StandardException.h>
 #include <Graphics/Texture.h>
+#include <fstream>
 
 Model::Model()
     :
     m_vertexCount(0),
     m_indexCount(0)
 {
+    m_pTexture = nullptr;
+    m_pModel = nullptr;
     Reset();
 }
 
@@ -17,11 +21,13 @@ Model::~Model()
 {
 }
 
-void Model::Initialize(D3DGraphics& gfx, std::string filePath)
+void Model::Initialize(D3DGraphics& gfx, std::string modelFilePath, std::string textureFilePath)
 {
+    LoadModel(modelFilePath);
+
     InitializeBuffers(gfx);
 
-    LoadTexture(gfx, filePath);
+    LoadTexture(gfx, textureFilePath);
 }
 
 void Model::Bind(D3DGraphics& gfx)
@@ -42,41 +48,23 @@ void Model::InitializeBuffers(D3DGraphics& gfx)
     D3D11_BUFFER_DESC vertexBufferDesc, indexBufferDesc; // 정점, 인덱스 데이터가 들어갈 버퍼.
     D3D11_SUBRESOURCE_DATA vertexData, indexData;        // 실제 정점, 인덱스 버퍼에 들어갈 데이터
 
-    // 정점과 인덱스 개수를 설정.
-    m_vertexCount = 4;
-    m_indexCount = 6;
-
-    // 정점 배열 생성
+    // 정점 배열 생성.
     vertices = new VertexType[m_vertexCount];
-    if (!vertices) throw std::runtime_error("Cannot create the vertex array");
-    // 인덱스 배열 생성
+    ALLOCATE_EXCEPT(vertices, "Can't allocate vertex array!")
+
+    // 인덱스 배열 생성.
     indices = new unsigned long[m_indexCount];
-    if (!indices) throw std::runtime_error("Cannot create the index array");
+    ALLOCATE_EXCEPT(indices, "Can't allocate index array!")
 
-    // 정점 배열에 정점 데이터를 채워줌.
-    vertices[0].position = DirectX::XMFLOAT3(-1.0f, -1.0f, 0.0f);
-    vertices[0].texture = DirectX::XMFLOAT2(0.0f, 1.0f);
-    vertices[0].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
+    // 파일로부터 읽어온 정점 데이터를 정점과 인덱스 배열에 채워줌.
+    for (int i = 0; i < m_vertexCount; i++)
+    {
+        vertices[i].position = DirectX::XMFLOAT3(m_pModel[i].x, m_pModel[i].y, m_pModel[i].z);
+        vertices[i].texture = DirectX::XMFLOAT2(m_pModel[i].tu, m_pModel[i].tv);
+        vertices[i].normal = DirectX::XMFLOAT3(m_pModel[i].nx, m_pModel[i].ny, m_pModel[i].nz);
 
-    vertices[1].position = DirectX::XMFLOAT3(-1.0f, 1.0f, 0.0f);
-    vertices[1].texture = DirectX::XMFLOAT2(0.0f, 0.0f);
-    vertices[1].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
-
-    vertices[2].position = DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f);
-    vertices[2].texture = DirectX::XMFLOAT2(1.0f, 0.0f);
-    vertices[2].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
-
-    vertices[3].position = DirectX::XMFLOAT3(1.0f, -1.0f, 0.0f);
-    vertices[3].texture = DirectX::XMFLOAT2(1.0f, 1.0f);
-    vertices[3].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
-
-    // 인덱스 배열 채워주기.
-    indices[0] = 0;
-    indices[1] = 1;
-    indices[2] = 2;
-    indices[3] = 2;
-    indices[4] = 3;
-    indices[5] = 0;
+        indices[i] = i;
+    }
 
     // 정적 정점 버퍼의 서술자를 설정.
     vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;  // 버퍼가 어떻게 읽혀지고 쓰여지는지(written) 정의. 
@@ -143,6 +131,7 @@ void Model::BindBuffers(D3DGraphics& gfx)
 void Model::LoadTexture(D3DGraphics& gfx, std::string filePath)
 {
     m_pTexture = new Texture(gfx, filePath);
+    ALLOCATE_EXCEPT(m_pTexture, "Can't allocate a texture instance!")
 }
 
 void Model::ReleaseTexture()
@@ -151,6 +140,59 @@ void Model::ReleaseTexture()
     {
         delete m_pTexture;
         m_pTexture = nullptr;
+    }
+}
+
+void Model::LoadModel(std::string filePath)
+{
+    std::ifstream file;
+    char input;
+
+    // 모델 파일을 열어줌.
+    file.open(filePath);
+    if (file.fail()) STD_EXCEPT("Can't open a model file!")
+
+    // 모델 파일에 있는 정점 개수 값을 읽어줌.
+    file.get(input);
+    while (input != ':')
+    {
+        file.get(input);
+    }
+    file >> m_vertexCount;
+
+    // 인덱스 개수를 정점의 개수와 똑같이 설정.
+    m_indexCount = m_vertexCount; 
+
+    // 읽어들인 정점 개수 만큼 정점 타입 구조체 배열을 할당해줌.
+    m_pModel = new ModelType[m_vertexCount];
+    ALLOCATE_EXCEPT(m_pModel, "Can't allocate model vertex array!")
+
+    // 모델의 개별 정점 데이터를 읽어옴.
+    file.get(input);
+    while (input != ':')
+    {
+        file.get(input);
+    }
+    file.get(input); // \n
+    file.get(input); // \r
+
+    for (int i = 0; i < m_vertexCount; i++)
+    {
+        file >> m_pModel[i].x  >> m_pModel[i].y  >> m_pModel[i].z;   // 위치
+        file >> m_pModel[i].tu >> m_pModel[i].tv;                    // 텍스쳐 좌표(UV)
+        file >> m_pModel[i].nx >> m_pModel[i].ny >> m_pModel[i].nz;  // 노말 벡터 좌표
+    }
+
+    // 파일 닫아줌.
+    file.close();
+}
+
+void Model::ReleaseModel()
+{
+    if (m_pModel != nullptr)
+    {
+        delete[]m_pModel;
+        m_pModel = nullptr;
     }
 }
 

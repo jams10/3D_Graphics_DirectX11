@@ -11,7 +11,7 @@ public:
 	Model();
 	~Model();
 
-	void Initialize(D3DGraphics& gfx, std::string filePath);
+	void Initialize(D3DGraphics& gfx, std::string modelFilePath, std::string textureFilePath);
 	void Bind(D3DGraphics& gfx);
 	unsigned int GetIndexCount() { return m_indexCount; }
 	ID3D11ShaderResourceView* GetTexture();
@@ -24,13 +24,25 @@ private:
 
 	void LoadTexture(D3DGraphics& gfx, std::string filePath);
 	void ReleaseTexture();
+
+	void LoadModel(std::string filePath);
+	void ReleaseModel();
+
 	void Reset();
+
 private:
 	struct VertexType
 	{
 		DirectX::XMFLOAT3 position;
 		DirectX::XMFLOAT2 texture;
 		DirectX::XMFLOAT3 normal;
+	};
+
+	struct ModelType
+	{
+		float x, y, z;
+		float tu, tv;
+		float nx, ny, nz;
 	};
 private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_pVertexBuffer;
@@ -41,4 +53,5 @@ private:
 	unsigned int m_vertexCount;
 	unsigned int m_indexCount;
 	Texture* m_pTexture;
+	ModelType* m_pModel;
 };

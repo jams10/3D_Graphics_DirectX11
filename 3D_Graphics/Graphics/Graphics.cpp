@@ -31,7 +31,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pD3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, Wnd, SCREEN_DEPTH, SCREEN_NEAR);
 
     m_pModel = new Model();
-    m_pModel->Initialize(*m_pD3D, "Images\\seafloor.png");
+    m_pModel->Initialize(*m_pD3D, "Resources\\Models\\Cube.model", "Resources\\Images\\seafloor.png");
 
     m_pCamera = new Camera();
 
