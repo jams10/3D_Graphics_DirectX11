@@ -5,13 +5,18 @@
 #include <ErrorHandle/D3DGraphicsExceptionMacros.h>
 #include <ErrorHandle/StandardException.h>
 #include <Graphics/Texture.h>
+#include <Utils/StringUtils.h>
+#include <Utils/ObjFileLoader.h>
 #include <fstream>
+#include <sstream>
 
 Model::Model()
     :
     m_vertexCount(0),
     m_indexCount(0)
 {
+    m_pVertices = nullptr;
+    m_pIndices = nullptr;
     m_pTexture = nullptr;
     m_pModel = nullptr;
     Reset();
@@ -42,29 +47,8 @@ ID3D11ShaderResourceView* Model::GetTexture()
 
 void Model::InitializeBuffers(D3DGraphics& gfx)
 {
-    VertexType* vertices = nullptr;
-    unsigned long* indices = nullptr;
-
     D3D11_BUFFER_DESC vertexBufferDesc, indexBufferDesc; // 정점, 인덱스 데이터가 들어갈 버퍼.
     D3D11_SUBRESOURCE_DATA vertexData, indexData;        // 실제 정점, 인덱스 버퍼에 들어갈 데이터
-
-    // 정점 배열 생성.
-    vertices = new VertexType[m_vertexCount];
-    ALLOCATE_EXCEPT(vertices, "Can't allocate vertex array!")
-
-    // 인덱스 배열 생성.
-    indices = new unsigned long[m_indexCount];
-    ALLOCATE_EXCEPT(indices, "Can't allocate index array!")
-
-    // 파일로부터 읽어온 정점 데이터를 정점과 인덱스 배열에 채워줌.
-    for (int i = 0; i < m_vertexCount; i++)
-    {
-        vertices[i].position = DirectX::XMFLOAT3(m_pModel[i].x, m_pModel[i].y, m_pModel[i].z);
-        vertices[i].texture = DirectX::XMFLOAT2(m_pModel[i].tu, m_pModel[i].tv);
-        vertices[i].normal = DirectX::XMFLOAT3(m_pModel[i].nx, m_pModel[i].ny, m_pModel[i].nz);
-
-        indices[i] = i;
-    }
 
     // 정적 정점 버퍼의 서술자를 설정.
     vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;  // 버퍼가 어떻게 읽혀지고 쓰여지는지(written) 정의. 
@@ -75,7 +59,7 @@ void Model::InitializeBuffers(D3DGraphics& gfx)
     vertexBufferDesc.StructureByteStride = sizeof(VertexType); // 버퍼에 들어있는 각 원소의 크기.
 
     // 정점 버퍼에 대한 subresource 구조체를 설정.
-    vertexData.pSysMem = vertices; // 초기화 데이터에 대한 포인터. 여기에 우리의 정점 데이터를 넣어줌.
+    vertexData.pSysMem = m_pVertices; // 초기화 데이터에 대한 포인터. 여기에 우리의 정점 데이터를 넣어줌.
     vertexData.SysMemPitch = 0;
     vertexData.SysMemSlicePitch = 0;
 
@@ -93,7 +77,7 @@ void Model::InitializeBuffers(D3DGraphics& gfx)
     indexBufferDesc.StructureByteStride = sizeof(int);
 
     // 인덱스 버퍼에 대한 subresource 구조체를 설정.
-    indexData.pSysMem = indices;
+    indexData.pSysMem = m_pIndices;
     indexData.SysMemPitch = 0;
     indexData.SysMemSlicePitch = 0;
 
@@ -101,11 +85,11 @@ void Model::InitializeBuffers(D3DGraphics& gfx)
     GFX_THROW_INFO(gfx.GetDevice()->CreateBuffer(&indexBufferDesc, &indexData, &m_pIndexBuffer));
 
     // 자원을 생성 했으므로, 동적 할당한 배열은 필요가 없으므로 해제 해줌.
-    delete[] vertices;
-    vertices = nullptr;
+    delete[] m_pVertices;
+    m_pVertices = nullptr;
 
-    delete[] indices;
-    indices = nullptr;
+    delete[] m_pIndices;
+    m_pIndices = nullptr;
 }
 
 void Model::BindBuffers(D3DGraphics& gfx)
@@ -145,46 +129,10 @@ void Model::ReleaseTexture()
 
 void Model::LoadModel(std::string filePath)
 {
-    std::ifstream file;
-    char input;
-
-    // 모델 파일을 열어줌.
-    file.open(filePath);
-    if (file.fail()) STD_EXCEPT("Can't open a model file!")
-
-    // 모델 파일에 있는 정점 개수 값을 읽어줌.
-    file.get(input);
-    while (input != ':')
-    {
-        file.get(input);
-    }
-    file >> m_vertexCount;
-
-    // 인덱스 개수를 정점의 개수와 똑같이 설정.
-    m_indexCount = m_vertexCount; 
-
-    // 읽어들인 정점 개수 만큼 정점 타입 구조체 배열을 할당해줌.
-    m_pModel = new ModelType[m_vertexCount];
-    ALLOCATE_EXCEPT(m_pModel, "Can't allocate model vertex array!")
-
-    // 모델의 개별 정점 데이터를 읽어옴.
-    file.get(input);
-    while (input != ':')
-    {
-        file.get(input);
-    }
-    file.get(input); // \n
-    file.get(input); // \r
-
-    for (int i = 0; i < m_vertexCount; i++)
-    {
-        file >> m_pModel[i].x  >> m_pModel[i].y  >> m_pModel[i].z;   // 위치
-        file >> m_pModel[i].tu >> m_pModel[i].tv;                    // 텍스쳐 좌표(UV)
-        file >> m_pModel[i].nx >> m_pModel[i].ny >> m_pModel[i].nz;  // 노말 벡터 좌표
-    }
-
-    // 파일 닫아줌.
-    file.close();
+    std::vector<std::string> splited = SplitString(filePath, '.');
+    FileFormat = splited[1];
+    if (FileFormat == "model") LoadCustomFile(filePath);
+    else if (FileFormat == "obj") LoadObjFile(filePath);
 }
 
 void Model::ReleaseModel()
@@ -222,6 +170,15 @@ void Model::SpawnControlWindow() noexcept
         }
     }
     ImGui::End();
+
+    if (FileFormat == "obj")
+    {
+        if (ImGui::Begin("ObjModelInfo"))
+        {
+            ImGui::Text(ToNarrow(FileInfoString).c_str());
+        }
+        ImGui::End();
+    }
 }
 
 void Model::Reset()
@@ -230,3 +187,203 @@ void Model::Reset()
     pitch = 0.f;
     yaw = 0.0f;
 }
+
+void Model::LoadCustomFile(std::string filePath)
+{
+    std::ifstream file;
+    char input;
+
+    // 모델 파일을 열어줌.
+    file.open(filePath);
+    if (file.fail()) STD_EXCEPT("Can't open a model file!")
+
+    // 모델 파일에 있는 정점 개수 값을 읽어줌.
+    file.get(input);
+    while (input != ':')
+    {
+        file.get(input);
+    }
+    file >> m_vertexCount;
+
+    // 인덱스 개수를 정점의 개수와 똑같이 설정.
+    m_indexCount = m_vertexCount;
+
+    // 읽어들인 정점 개수 만큼 정점 타입 구조체 배열을 할당해줌.
+    m_pModel = new ModelType[m_vertexCount];
+    ALLOCATE_EXCEPT(m_pModel, "Can't allocate model vertex array!")
+
+    // 모델의 개별 정점 데이터를 읽어옴.
+    file.get(input);
+    while (input != ':')
+    {
+        file.get(input);
+    }
+    file.get(input); // \n
+    file.get(input); // \r
+
+    for (int i = 0; i < m_vertexCount; i++)
+    {
+        file >> m_pModel[i].x >> m_pModel[i].y >> m_pModel[i].z;     // 위치
+        file >> m_pModel[i].tu >> m_pModel[i].tv;                    // 텍스쳐 좌표(UV)
+        file >> m_pModel[i].nx >> m_pModel[i].ny >> m_pModel[i].nz;  // 노말 벡터 좌표
+    }
+
+    // 정점 배열 생성.
+    m_pVertices = new VertexType[m_vertexCount];
+    ALLOCATE_EXCEPT(m_pVertices, "Can't allocate vertex array!")
+
+    // 인덱스 배열 생성.
+    m_pIndices = new unsigned long[m_indexCount];
+    ALLOCATE_EXCEPT(m_pIndices, "Can't allocate index array!")
+
+    // 파일로부터 읽어온 정점 데이터를 정점과 인덱스 배열에 채워줌.
+    for (int i = 0; i < m_vertexCount; i++)
+    {
+        m_pVertices[i].position = DirectX::XMFLOAT3(m_pModel[i].x, m_pModel[i].y, m_pModel[i].z);
+        m_pVertices[i].texture = DirectX::XMFLOAT2(m_pModel[i].tu, m_pModel[i].tv);
+        m_pVertices[i].normal = DirectX::XMFLOAT3(m_pModel[i].nx, m_pModel[i].ny, m_pModel[i].nz);
+
+        m_pIndices[i] = i;
+    }
+
+    // 파일 닫아줌.
+    file.close();
+}
+
+void Model::LoadObjFile(std::string filePath)
+{
+    FileInfo info;
+    std::vector<Float3Type> vertices;
+    std::vector<Float3Type> texcoords;
+    std::vector<Float3Type> normals;
+    std::vector<FaceType> faces;
+    info = GetModelInfo(filePath);
+    TransformDataToDXFormat(filePath, info, vertices, texcoords, normals, faces);
+
+    std::wstringstream ss;
+    std::wstring tri = info.isTriangulated ? L"Yes" : L"No";
+    ss << "Vertex Count : " << info.vertexCount << "\n" << "Texture Coord Count : " << info.textureCount << "\n"
+        << "Normal Vector Count : " << info.normalCount << "\n" << "Is Triangulated : " << tri;
+
+    FileInfoString = ss.str();
+
+    // 파일로부터 읽은 정점 구성을 토대로 모델 ㄴㅇㄹㄴㅇㄹㅇㄹ
+    int vIdx = 0, tIdx = 0, nIdx = 0, idx = 0;
+
+    // 모델을 익스포트 할 때 triangulate 옵션을 사용 했으면, 각 면은 삼각형 단위로 정리되어 나옴.
+    if (info.isTriangulated)
+    {
+        m_vertexCount = info.faceCount * 3;
+        m_indexCount = m_vertexCount;
+    }
+    else
+    {
+        // !!! 이는 정육면체에만 적용됨. 모델마다 표면을 구성하는 정점의 개수가 다를 수 있음.(4개가 아닐 수 있음.)
+        m_vertexCount = info.faceCount * 4;
+        m_indexCount = m_vertexCount + info.faceCount * 2;
+    }
+
+    m_pModel = new ModelType[m_vertexCount];
+
+    for (int i = 0; i < info.faceCount; ++i)
+    {
+        vIdx = faces[i].vIndex1 - 1;
+        tIdx = faces[i].tIndex1 - 1;
+        nIdx = faces[i].nIndex1 - 1;
+
+        m_pModel[idx].x = vertices[vIdx].x;
+        m_pModel[idx].y = vertices[vIdx].y;
+        m_pModel[idx].z = vertices[vIdx].z;
+        m_pModel[idx].tu = texcoords[tIdx].x;
+        m_pModel[idx].tv = texcoords[tIdx].y;
+        m_pModel[idx].nx = normals[nIdx].x;
+        m_pModel[idx].ny = normals[nIdx].y;
+        m_pModel[idx].nz = normals[nIdx].z;
+
+        vIdx = faces[i].vIndex2 - 1;
+        tIdx = faces[i].tIndex2 - 1;
+        nIdx = faces[i].nIndex2 - 1;
+        idx++;
+
+        m_pModel[idx].x = vertices[vIdx].x;
+        m_pModel[idx].y = vertices[vIdx].y;
+        m_pModel[idx].z = vertices[vIdx].z;
+        m_pModel[idx].tu = texcoords[tIdx].x;
+        m_pModel[idx].tv = texcoords[tIdx].y;
+        m_pModel[idx].nx = normals[nIdx].x;
+        m_pModel[idx].ny = normals[nIdx].y;
+        m_pModel[idx].nz = normals[nIdx].z;
+
+        vIdx = faces[i].vIndex3 - 1;
+        tIdx = faces[i].tIndex3 - 1;
+        nIdx = faces[i].nIndex3 - 1;
+        idx++;
+
+        m_pModel[idx].x = vertices[vIdx].x;
+        m_pModel[idx].y = vertices[vIdx].y;
+        m_pModel[idx].z = vertices[vIdx].z;
+        m_pModel[idx].tu = texcoords[tIdx].x;
+        m_pModel[idx].tv = texcoords[tIdx].y;
+        m_pModel[idx].nx = normals[nIdx].x;
+        m_pModel[idx].ny = normals[nIdx].y;
+        m_pModel[idx].nz = normals[nIdx].z;
+
+        if (!info.isTriangulated)
+        {
+            vIdx = faces[i].vIndex4 - 1;
+            tIdx = faces[i].tIndex4 - 1;
+            nIdx = faces[i].nIndex4 - 1;
+            idx++;
+
+            m_pModel[idx].x = vertices[vIdx].x;
+            m_pModel[idx].y = vertices[vIdx].y;
+            m_pModel[idx].z = vertices[vIdx].z;
+            m_pModel[idx].tu = texcoords[tIdx].x;
+            m_pModel[idx].tv = texcoords[tIdx].y;
+            m_pModel[idx].nx = normals[nIdx].x;
+            m_pModel[idx].ny = normals[nIdx].y;
+            m_pModel[idx].nz = normals[nIdx].z;
+        }
+        
+        idx++;
+    }
+
+    // 정점 배열 생성.
+    m_pVertices = new VertexType[m_vertexCount];
+    ALLOCATE_EXCEPT(m_pVertices, "Can't allocate vertex array!")
+
+    // 인덱스 배열 생성.
+    m_pIndices = new unsigned long[m_indexCount];
+    ALLOCATE_EXCEPT(m_pIndices, "Can't allocate index array!")
+
+    // 파일로부터 읽어온 정점 데이터를 정점과 인덱스 배열에 채워줌.
+    for (int i = 0; i < m_vertexCount; i++)
+    {
+        m_pVertices[i].position = DirectX::XMFLOAT3(m_pModel[i].x, m_pModel[i].y, m_pModel[i].z);
+        m_pVertices[i].texture = DirectX::XMFLOAT2(m_pModel[i].tu, m_pModel[i].tv);
+        m_pVertices[i].normal = DirectX::XMFLOAT3(m_pModel[i].nx, m_pModel[i].ny, m_pModel[i].nz);
+    }
+
+    if (info.isTriangulated)
+    {
+        for (int i = 0; i < m_indexCount; ++i)
+        {
+            m_pIndices[i] = i;
+        }
+    }
+
+    int curface = 0;
+    for (int i = 0; i < m_indexCount; i+=6)
+    {
+        m_pIndices[i]     = curface;
+        m_pIndices[i + 1] = curface + 1;
+        m_pIndices[i + 2] = curface + 2;
+
+        m_pIndices[i + 3] = curface + 3;
+        m_pIndices[i + 4] = curface;
+        m_pIndices[i + 5] = curface + 2;
+        curface += 4;
+    }
+}
+
+

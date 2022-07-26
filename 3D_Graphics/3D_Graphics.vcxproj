@@ -219,6 +219,7 @@
     <ClInclude Include="Objects\Camera.h" />
     <ClInclude Include="Objects\Model.h" />
     <ClInclude Include="Utils\GameTimer.h" />
+    <ClInclude Include="Utils\ObjFileLoader.h" />
     <ClInclude Include="Utils\StringUtils.h" />
     <ClInclude Include="Utils\Surface.h" />
     <ClInclude Include="Windows\Window.h" />

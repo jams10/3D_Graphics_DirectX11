@@ -28,6 +28,9 @@ private:
 	void LoadModel(std::string filePath);
 	void ReleaseModel();
 
+	void LoadCustomFile(std::string filePath);
+	void LoadObjFile(std::string filePath);
+
 	void Reset();
 
 private:
@@ -52,6 +55,10 @@ private:
 	float yaw;
 	unsigned int m_vertexCount;
 	unsigned int m_indexCount;
+	VertexType* m_pVertices;
+	unsigned long* m_pIndices;
 	Texture* m_pTexture;
 	ModelType* m_pModel;
+	std::string FileFormat;
+	std::wstring FileInfoString;
 };

@@ -16,6 +16,21 @@ std::vector<std::string> TokenizeQuoted(const std::string& input)
 	return tokens;
 }
 
+std::vector<std::string> SplitString(std::string stringToSplit, char delim)
+{
+	std::istringstream iss(stringToSplit);             
+	std::string buffer;                      
+
+	std::vector<std::string> result;
+
+	while (getline(iss, buffer, delim))
+	{
+		result.push_back(buffer);
+	}
+
+	return result;
+}
+
 std::wstring ToWide(const std::string& narrow)
 {
 	wchar_t wide[512];
