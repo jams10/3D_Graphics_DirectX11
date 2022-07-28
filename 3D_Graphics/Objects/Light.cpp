@@ -3,11 +3,16 @@
 
 Light::Light()
 {
-    Reset();
+	ResetAll();
 }
 
 Light::~Light()
 {
+}
+
+DirectX::XMFLOAT4 Light::GetAmbientColor() const noexcept
+{
+	return ambientColor;
 }
 
 DirectX::XMFLOAT4 Light::GetDiffuseColor() const noexcept
@@ -26,16 +31,33 @@ void Light::SpawnControlWindow() noexcept
 	{
 		ImGui::Text("Diffuse Color");
 		ImGui::ColorPicker3("Diffuse Color", &diffuseColor.x);
-		if (ImGui::Button("Reset"))
+		if (ImGui::Button("Reset Diffuse"))
 		{
-			Reset();
+			ResetDiffuse();
+		}
+		ImGui::Text("Ambient Color");
+		ImGui::ColorPicker3("Ambient Color", &ambientColor.x);
+		if (ImGui::Button("Reset Ambient"))
+		{
+			ResetAmbient();
 		}
 	}
 	ImGui::End();
 }
 
-void Light::Reset() noexcept
+void Light::ResetAmbient() noexcept
 {
-    diffuseColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	ambientColor = { 0.2f, 0.2f, 0.2f, 1.0f };
+}
+
+void Light::ResetDiffuse() noexcept
+{
+	diffuseColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+}
+
+void Light::ResetAll() noexcept
+{
+	ResetAmbient();
+	ResetDiffuse();
     lightDirection = { 0.0f, 0.0f, 1.0f };
 }

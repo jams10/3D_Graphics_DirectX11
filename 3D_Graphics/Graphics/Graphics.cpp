@@ -75,7 +75,7 @@ bool Graphics::Render()
 
     // 정점 셰이더에 사용할 상수 버퍼를 각 행렬 데이터로 설정해주고, 셰이더 및 상수 버퍼를 파이프라인에 바인딩 해줌.
     m_pLightShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, 
-                          m_pModel->GetTexture(), m_pLight->GetDiffuseColor(), m_pLight->GetLightDirection());
+                          m_pModel->GetTexture(), m_pLight->GetAmbientColor(), m_pLight->GetDiffuseColor(), m_pLight->GetLightDirection());
 
     m_pModel->SpawnControlWindow();
     m_pCamera->SpawnControlWindow();

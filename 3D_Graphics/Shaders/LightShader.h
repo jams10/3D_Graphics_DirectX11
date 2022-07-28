@@ -14,12 +14,12 @@ public:
 
 	void Initialize(D3DGraphics& gfx);
 	void Bind(D3DGraphics& gfx, int indexCount, XMMATRIX world, XMMATRIX view, XMMATRIX projection, 
-			  ID3D11ShaderResourceView* texture, DirectX::XMFLOAT4 diffuseColor, DirectX::XMFLOAT3 lightDirection);
+			  ID3D11ShaderResourceView* texture, DirectX::XMFLOAT4 ambientColor, DirectX::XMFLOAT4 diffuseColor, DirectX::XMFLOAT3 lightDirection);
 
 private:
 	void InitializeShaders(D3DGraphics& gfx, const std::wstring& vsFileName, const std::wstring& psFileName);
 	void SetShaderParameters(D3DGraphics& gfx, XMMATRIX world, XMMATRIX view, XMMATRIX projection,
-		                     ID3D11ShaderResourceView* texture, DirectX::XMFLOAT4 diffuseColor, DirectX::XMFLOAT3 lightDirection);
+		                     ID3D11ShaderResourceView* texture, DirectX::XMFLOAT4 ambientColor, DirectX::XMFLOAT4 diffuseColor, DirectX::XMFLOAT3 lightDirection);
 	void BindShaders(D3DGraphics& gfx, int indexCount);
 
 private:
@@ -31,6 +31,7 @@ private:
 	};
 	struct LightBufferType
 	{
+		DirectX::XMFLOAT4 ambientColor;
 		DirectX::XMFLOAT4 diffuseColor;
 		DirectX::XMFLOAT3 lightDirection;
 		float padding; // 16 바이트 정렬을 위한 패딩 값.

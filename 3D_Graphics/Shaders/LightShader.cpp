@@ -15,10 +15,11 @@ void LightShader::Initialize(D3DGraphics& gfx)
 	InitializeShaders(gfx, L"Shaders/DiffuseLightingVS.cso", L"Shaders/DiffuseLightingPS.cso");
 }
 
-void LightShader::Bind(D3DGraphics& gfx, int indexCount, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* texture, DirectX::XMFLOAT4 diffuseColor, DirectX::XMFLOAT3 lightDirection)
+void LightShader::Bind(D3DGraphics& gfx, int indexCount, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* texture, 
+				       DirectX::XMFLOAT4 ambientColor, DirectX::XMFLOAT4 diffuseColor, DirectX::XMFLOAT3 lightDirection)
 {
 	// 월드, 뷰, 투영 행렬 설정, 텍스쳐, 광원 색상 및 방향 설정.
-	SetShaderParameters(gfx, world, view, projection, texture, diffuseColor, lightDirection);
+	SetShaderParameters(gfx, world, view, projection, texture, ambientColor, diffuseColor, lightDirection);
 
 	// 파이프라인에 자원들을 바인딩.
 	BindShaders(gfx, indexCount);
@@ -126,7 +127,8 @@ void LightShader::InitializeShaders(D3DGraphics& gfx, const std::wstring& vsFile
 	GFX_THROW_INFO(gfx.GetDevice()->CreateSamplerState(&samplerDesc, &m_pSamplerState));
 }
 
-void LightShader::SetShaderParameters(D3DGraphics& gfx, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* texture, DirectX::XMFLOAT4 diffuseColor, DirectX::XMFLOAT3 lightDirection)
+void LightShader::SetShaderParameters(D3DGraphics& gfx, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* texture, 
+									  DirectX::XMFLOAT4 ambientColor, DirectX::XMFLOAT4 diffuseColor, DirectX::XMFLOAT3 lightDirection)
 {
 	MatrixBufferType cb1;
 	LightBufferType cb2;
@@ -141,6 +143,7 @@ void LightShader::SetShaderParameters(D3DGraphics& gfx, XMMATRIX world, XMMATRIX
 
 	gfx.GetContext()->PSSetShaderResources(0, 1, &texture);
 
+	cb2.ambientColor = ambientColor;
 	cb2.diffuseColor = diffuseColor;
 	cb2.lightDirection = lightDirection;
 
