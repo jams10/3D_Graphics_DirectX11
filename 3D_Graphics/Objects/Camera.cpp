@@ -25,6 +25,11 @@ DirectX::XMMATRIX Camera::GetViewMatrix() const noexcept
 	return DirectX::XMMatrixLookAtLH(camPosition, camTarget, DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 }
 
+DirectX::XMFLOAT3 Camera::GetPosition() const
+{
+	return pos;
+}
+
 // 카메라 컨트롤 ui 생성 함수.
 void Camera::SpawnControlWindow() noexcept
 {

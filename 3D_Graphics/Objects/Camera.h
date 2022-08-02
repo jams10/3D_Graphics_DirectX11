@@ -9,6 +9,7 @@ class Camera
 public:
 	Camera() noexcept;
 	DirectX::XMMATRIX GetViewMatrix() const noexcept;
+	DirectX::XMFLOAT3 GetPosition() const;
 	void SpawnControlWindow() noexcept;
 	void Reset() noexcept;
 	void Rotate(float dx, float dy) noexcept;               // 회전 함수

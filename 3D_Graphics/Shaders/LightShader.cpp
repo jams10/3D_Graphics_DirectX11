@@ -12,14 +12,15 @@ LightShader::~LightShader()
 
 void LightShader::Initialize(D3DGraphics& gfx)
 {
-	InitializeShaders(gfx, L"Shaders/DiffuseLightingVS.cso", L"Shaders/DiffuseLightingPS.cso");
+	InitializeShaders(gfx, L"Shaders/SpecularLightingVS.cso", L"Shaders/SpecularLightingPS.cso");
 }
 
-void LightShader::Bind(D3DGraphics& gfx, int indexCount, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* texture, 
-				       DirectX::XMFLOAT4 ambientColor, DirectX::XMFLOAT4 diffuseColor, DirectX::XMFLOAT3 lightDirection)
+void LightShader::Bind(D3DGraphics& gfx, int indexCount, XMMATRIX world, XMMATRIX view, XMMATRIX projection, XMFLOAT3 cameraPosition,
+					  ID3D11ShaderResourceView* texture, DirectX::XMFLOAT4 ambientColor, DirectX::XMFLOAT4 diffuseColor, DirectX::XMFLOAT3 lightDirection,
+					  XMFLOAT4 specularColor, float specularPower)
 {
 	// 월드, 뷰, 투영 행렬 설정, 텍스쳐, 광원 색상 및 방향 설정.
-	SetShaderParameters(gfx, world, view, projection, texture, ambientColor, diffuseColor, lightDirection);
+	SetShaderParameters(gfx, world, view, projection, cameraPosition, texture, ambientColor, diffuseColor, lightDirection, specularColor, specularPower);
 
 	// 파이프라인에 자원들을 바인딩.
 	BindShaders(gfx, indexCount);
@@ -98,6 +99,14 @@ void LightShader::InitializeShaders(D3DGraphics& gfx, const std::wstring& vsFile
 	// 정점 셰이더를 위한 상수 버퍼 생성.
 	GFX_THROW_INFO(gfx.GetDevice()->CreateBuffer(&matrixBufferDesc, NULL, &m_pMatrixBuffer));
 
+	D3D11_BUFFER_DESC cameraBufferDesc;
+	cameraBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	cameraBufferDesc.ByteWidth = sizeof(CameraBufferType);
+	cameraBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cameraBufferDesc.CPUAccessFlags = 0;
+	cameraBufferDesc.MiscFlags = 0;
+	GFX_THROW_INFO(gfx.GetDevice()->CreateBuffer(&cameraBufferDesc, NULL, &m_pCameraBuffer));
+
 	// 픽셀 셰이더에서 사용할 행렬들을 담은 상수 버퍼에 대한 서술자를 세팅.
 	D3D11_BUFFER_DESC lightBufferDesc;
 	lightBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -127,11 +136,13 @@ void LightShader::InitializeShaders(D3DGraphics& gfx, const std::wstring& vsFile
 	GFX_THROW_INFO(gfx.GetDevice()->CreateSamplerState(&samplerDesc, &m_pSamplerState));
 }
 
-void LightShader::SetShaderParameters(D3DGraphics& gfx, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* texture, 
-									  DirectX::XMFLOAT4 ambientColor, DirectX::XMFLOAT4 diffuseColor, DirectX::XMFLOAT3 lightDirection)
+void LightShader::SetShaderParameters(D3DGraphics& gfx, XMMATRIX world, XMMATRIX view, XMMATRIX projection, XMFLOAT3 cameraPosition,
+				                      ID3D11ShaderResourceView* texture, DirectX::XMFLOAT4 ambientColor, DirectX::XMFLOAT4 diffuseColor, DirectX::XMFLOAT3 lightDirection,
+									  XMFLOAT4 specularColor, float specularPower)
 {
 	MatrixBufferType cb1;
-	LightBufferType cb2;
+	CameraBufferType cb2;
+	LightBufferType cb3;
 	int bufferNumber = 0;
 
 	cb1.world = DirectX::XMMatrixTranspose(world);
@@ -141,13 +152,21 @@ void LightShader::SetShaderParameters(D3DGraphics& gfx, XMMATRIX world, XMMATRIX
 	gfx.GetContext()->UpdateSubresource(m_pMatrixBuffer.Get(), 0, NULL, &cb1, sizeof(cb1), 0);
 	gfx.GetContext()->VSSetConstantBuffers(bufferNumber, 1, m_pMatrixBuffer.GetAddressOf());
 
+	cb2.cameraPosition = cameraPosition;
+	cb2.padding = 0.0f;
+
+	gfx.GetContext()->UpdateSubresource(m_pCameraBuffer.Get(), 0, NULL, &cb2, sizeof(cb2), 0);
+	gfx.GetContext()->VSSetConstantBuffers(bufferNumber + 1, 1, m_pCameraBuffer.GetAddressOf());
+
 	gfx.GetContext()->PSSetShaderResources(0, 1, &texture);
 
-	cb2.ambientColor = ambientColor;
-	cb2.diffuseColor = diffuseColor;
-	cb2.lightDirection = lightDirection;
+	cb3.ambientColor = ambientColor;
+	cb3.diffuseColor = diffuseColor;
+	cb3.lightDirection = lightDirection;
+	cb3.specularColor = specularColor;
+	cb3.specularPower = specularPower;
 
-	gfx.GetContext()->UpdateSubresource(m_pLightBuffer.Get(), 0, NULL, &cb2, 0, 0);
+	gfx.GetContext()->UpdateSubresource(m_pLightBuffer.Get(), 0, NULL, &cb3, 0, 0);
 	gfx.GetContext()->PSSetConstantBuffers(bufferNumber, 1, m_pLightBuffer.GetAddressOf());
 }
 

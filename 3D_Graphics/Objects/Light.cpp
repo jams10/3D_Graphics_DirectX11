@@ -25,6 +25,16 @@ DirectX::XMFLOAT3 Light::GetLightDirection() const noexcept
     return lightDirection;
 }
 
+float Light::GetSpecularPower() const noexcept
+{
+	return specularPower;
+}
+
+DirectX::XMFLOAT4 Light::GetSpecularColor() const noexcept
+{
+	return specularColor;
+}
+
 void Light::SpawnControlWindow() noexcept
 {
 	if (ImGui::Begin("Light"))
@@ -41,6 +51,18 @@ void Light::SpawnControlWindow() noexcept
 		{
 			ResetAmbient();
 		}
+		ImGui::Text("Specular Color");
+		ImGui::ColorPicker3("Specular Color", &specularColor.x);
+		if (ImGui::Button("Reset Specular Color"))
+		{
+			ResetSpecularColor();
+		}
+		ImGui::Text("Specular Power");
+		ImGui::SliderFloat("Power", &specularPower, 16.0f, 64.0f, "%.1f");
+		if (ImGui::Button("Reset Specular Power"))
+		{
+			ResetSpecularPower();
+		}
 	}
 	ImGui::End();
 }
@@ -55,9 +77,21 @@ void Light::ResetDiffuse() noexcept
 	diffuseColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 }
 
+void Light::ResetSpecularPower() noexcept
+{
+	specularPower = 16.0f;
+}
+
+void Light::ResetSpecularColor() noexcept
+{
+	specularColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+}
+
 void Light::ResetAll() noexcept
 {
 	ResetAmbient();
 	ResetDiffuse();
+	ResetSpecularPower();
+	ResetSpecularColor();
     lightDirection = { 0.0f, 0.0f, 1.0f };
 }

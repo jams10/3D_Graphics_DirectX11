@@ -262,6 +262,8 @@
     <FxCompile Include="Shaders\TexturePS.hlsl" />
     <FxCompile Include="Shaders\DiffuseLightingVS.hlsl" />
     <FxCompile Include="Shaders\DiffuseLightingPS.hlsl" />
+    <FxCompile Include="Shaders\SpecularLightingVS.hlsl" />
+    <FxCompile Include="Shaders\SpecularLightingPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dxtex\DirectXTex.inl">
