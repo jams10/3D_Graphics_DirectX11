@@ -102,6 +102,9 @@
     <ClCompile Include="ErrorHandle\StandardException.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Objects\Bitmap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App\App.h">
@@ -252,6 +255,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Utils\ObjFileLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects\Bitmap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

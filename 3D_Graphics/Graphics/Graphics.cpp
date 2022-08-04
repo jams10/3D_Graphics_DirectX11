@@ -1,5 +1,6 @@
 #include "Graphics.h"
 #include <Graphics/D3DGraphics.h>
+#include <Shaders/TextureShader.h>
 #include <Shaders/LightShader.h>
 #include <ErrorHandle/DxgiInfoManager.h>
 #include <ErrorHandle/CustomException.h>
@@ -7,6 +8,7 @@
 #include <Objects/Model.h>
 #include <Objects/Camera.h>
 #include <Objects/Light.h>
+#include <Objects/Bitmap.h>
 #include <Input/Keyboard.h>
 #include <imgui/imgui.h>
 #include <stdexcept>
@@ -19,6 +21,7 @@ Graphics::Graphics()
     m_pCamera = nullptr;
     m_pModel = nullptr;
     m_pLightShader = nullptr;
+    m_pBitmap = nullptr;
 }
 
 Graphics::~Graphics()
@@ -34,11 +37,18 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pModel->Initialize(*m_pD3D, "Resources\\Models\\TestBox.obj", "Resources\\Images\\seafloor.png");
 
     m_pCamera = new Camera();
+    m_pFixedCamera = new Camera();
 
     m_pLight = new Light();
 
+    m_pTextureShader = new TextureShader();
+    m_pTextureShader->Initialize(*m_pD3D);
+
     m_pLightShader = new LightShader();
     m_pLightShader->Initialize(*m_pD3D);
+
+    m_pBitmap = new Bitmap();
+    m_pBitmap->Initialize(*m_pD3D, screenWidth, screenHeight, "Resources\\Images\\seafloor.png", 256, 256);
 
     return true;
 }
@@ -48,7 +58,9 @@ void Graphics::Shutdown()
     SAFE_RELEASE(m_pD3D)
     SAFE_RELEASE(m_pModel)
     SAFE_RELEASE(m_pCamera)
+    SAFE_RELEASE(m_pTextureShader)
     SAFE_RELEASE(m_pLightShader)
+    SAFE_RELEASE(m_pBitmap)
 }
 
 bool Graphics::Frame()
@@ -65,15 +77,29 @@ bool Graphics::Render()
 {
     m_pD3D->BeginFrame(0.5f, 0.5f, 0.5f, 1.f);
 
-    // 월드, 뷰, 투영 행렬을 얻어옴.
+    // 월드, 뷰, 원근 투영, 정사영 투영 행렬을 얻어옴.
     dx::XMMATRIX world = m_pModel->GetWorldMatrix();
+    dx::XMMATRIX worldFor2D = dx::XMMatrixIdentity();
     dx::XMMATRIX view = m_pCamera->GetViewMatrix();
+    dx::XMMATRIX viewFor2D = m_pFixedCamera->GetViewMatrix();
     dx::XMMATRIX projection = m_pD3D->GetProjectionMatrix();
+    dx::XMMATRIX orth = m_pD3D->GetOrthMatrix();
+
+    // 2D 렌더링을 위해 깊이 버퍼를 꺼줌.
+    m_pD3D->TurnZBufferOff();
+
+    // 2D 이미지 렌더링을 위한 bitmap 객체가 가진 정점과 인덱스 버퍼를 파이프라인에 바인딩.
+    m_pBitmap->Bind(*m_pD3D, (1280 / 2) * -1 + (256 / 2), 720 / 2 - (256/ 2));
+
+    // 2D 이미지는 texture shader로 그려줌.
+    m_pTextureShader->Bind(*m_pD3D, m_pBitmap->GetIndexCount(), worldFor2D, viewFor2D, orth, m_pBitmap->GetTexture());
+
+    m_pD3D->TurnZBufferOn();
 
     // 모델을 구성하는 정점과 인덱스 버퍼를 파이프라인에 바인딩 함.
     m_pModel->Bind(*m_pD3D);
 
-    // 정점 셰이더에 사용할 상수 버퍼를 각 행렬 데이터로 설정해주고, 셰이더 및 상수 버퍼를 파이프라인에 바인딩 해줌.
+    // 3D 모델은 light shader로 그려줌.
     m_pLightShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, m_pCamera->GetPosition(),
                           m_pModel->GetTexture(), m_pLight->GetAmbientColor(), m_pLight->GetDiffuseColor(), m_pLight->GetLightDirection(), 
                           m_pLight->GetSpecularColor(), m_pLight->GetSpecularPower());

@@ -74,6 +74,9 @@ public:
 	dx::XMMATRIX GetWorldMatrix() { return m_worldMatrix; }
 	dx::XMMATRIX GetOrthMatrix() { return m_orthoMatrix; }
 
+	void TurnZBufferOn();
+	void TurnZBufferOff();
+
 private:
 #ifndef NDEBUG
 	DxgiInfoManager infoManager; // 디버그 모드일 때만 DxgiInfoManager 객체를 들고 있게 함.
@@ -92,4 +95,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_pContext;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_pTarget;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_pDSV;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_pDepthStencilState;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_pDepthDisabledStencilState;
 };

@@ -76,11 +76,17 @@ bool D3DGraphics::Initialize(int screenWidth, int screenHeight, bool vsync, HWND
 	dsDesc.DepthEnable = TRUE;
 	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> pDSState;
-	GFX_THROW_INFO(m_pDevice->CreateDepthStencilState(&dsDesc, &pDSState));
+	GFX_THROW_INFO(m_pDevice->CreateDepthStencilState(&dsDesc, &m_pDepthStencilState));
+
+	// 깊이 값을 쓰지 않는 depth stencil state 생성.
+	D3D11_DEPTH_STENCIL_DESC disableDesc = {};
+	disableDesc.DepthEnable = FALSE;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	GFX_THROW_INFO(m_pDevice->CreateDepthStencilState(&disableDesc, &m_pDepthDisabledStencilState));
 
 	// 출력 병합기에 depth state 묶기.
-	m_pContext->OMSetDepthStencilState(pDSState.Get(), 1u);
+	m_pContext->OMSetDepthStencilState(m_pDepthStencilState.Get(), 1u);
 
 	// 깊이 스텐실용 텍스쳐 생성.
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> pDepthStencil;
@@ -132,6 +138,7 @@ bool D3DGraphics::Initialize(int screenWidth, int screenHeight, bool vsync, HWND
 
 	// 직교 투영 행렬.
 	m_orthoMatrix = dx::XMMatrixOrthographicLH((float)screenWidth, (float)screenHeight, screenNear, screenDepth);
+	//m_orthoMatrix = dx::XMMatrixOrthographicOffCenterLH(0.f, (float)screenWidth, (float)screenHeight, 0.f, screenNear, screenDepth);
 
 	// imgui dx11 구현 초기화.
 	ImGui_ImplDX11_Init(m_pDevice.Get(), m_pContext.Get());
@@ -200,6 +207,16 @@ void D3DGraphics::EndFrame()
 			}
 		}
 	}
+}
+
+void D3DGraphics::TurnZBufferOn()
+{
+	m_pContext->OMSetDepthStencilState(m_pDepthStencilState.Get(), 1);
+}
+
+void D3DGraphics::TurnZBufferOff()
+{
+	m_pContext->OMSetDepthStencilState(m_pDepthDisabledStencilState.Get(), 1);
 }
 
 #pragma region Exception
