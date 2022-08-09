@@ -1,5 +1,6 @@
 #include "Graphics.h"
 #include <Graphics/D3DGraphics.h>
+#include <Graphics/D2DGraphics.h>
 #include <Shaders/TextureShader.h>
 #include <Shaders/LightShader.h>
 #include <ErrorHandle/DxgiInfoManager.h>
@@ -18,6 +19,7 @@
 Graphics::Graphics()
 {
     m_pD3D = nullptr;
+    m_pD2D = nullptr;
     m_pCamera = nullptr;
     m_pModel = nullptr;
     m_pLightShader = nullptr;
@@ -32,6 +34,9 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
 {
     m_pD3D = new D3DGraphics();
     m_pD3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, Wnd, SCREEN_DEPTH, SCREEN_NEAR);
+
+    m_pD2D = new D2DGraphics(*m_pD3D);
+    m_pD2D->Initialize(*m_pD3D);
 
     m_pModel = new Model();
     m_pModel->Initialize(*m_pD3D, "Resources\\Models\\TestBox.obj", "Resources\\Images\\seafloor.png");
@@ -56,6 +61,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
 void Graphics::Shutdown()
 {
     SAFE_RELEASE(m_pD3D)
+    SAFE_RELEASE(m_pD2D)
     SAFE_RELEASE(m_pModel)
     SAFE_RELEASE(m_pCamera)
     SAFE_RELEASE(m_pTextureShader)
@@ -76,6 +82,10 @@ bool Graphics::Frame()
 bool Graphics::Render()
 {
     m_pD3D->BeginFrame(0.5f, 0.5f, 0.5f, 1.f);
+    m_pD2D->BeginFrame();
+
+    m_pD2D->DrawBox(0, 720 - 256, 256, 720);
+    m_pD2D->WriteText(L"Direct2D 그리기 테스트!");
 
     // 월드, 뷰, 원근 투영, 정사영 투영 행렬을 얻어옴.
     dx::XMMATRIX world = m_pModel->GetWorldMatrix();
@@ -108,6 +118,7 @@ bool Graphics::Render()
     m_pCamera->SpawnControlWindow();
     m_pLight->SpawnControlWindow();
 
+    m_pD2D->EndFrame();
     // 렌더링된 씬을 화면에 표시.
     m_pD3D->EndFrame();
 

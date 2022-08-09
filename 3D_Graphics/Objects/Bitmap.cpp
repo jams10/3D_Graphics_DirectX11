@@ -66,7 +66,7 @@ void Bitmap::InitializeBuffers(D3DGraphics& gfx)
 	memset(vertices, 0, (sizeof(VertexType) * m_vertexCount));
 
 	// 인덱스 배열 채워주기.
-	for (int i = 0; i < m_indexCount; ++i) indices[i] = i;
+	for (unsigned int i = 0; i < m_indexCount; ++i) indices[i] = i;
 
 	// 동적 정점 버퍼 서술자 생성.
 	D3D11_BUFFER_DESC  vertexBufferDesc;

@@ -4,6 +4,7 @@
 #include <ErrorHandle/D3DGraphicsExceptionMacros.h>
 #include <imgui/imgui_impl_dx11.h>
 #include <imgui/imgui_impl_win32.h>
+#include <winuser.h>
 
 #include <d3dcompiler.h>
 
@@ -45,8 +46,9 @@ bool D3DGraphics::Initialize(int screenWidth, int screenHeight, bool vsync, HWND
 
 	UINT swapCreateFlags = 0u;
 #ifndef NDEBUG
-	swapCreateFlags |= D3D11_CREATE_DEVICE_DEBUG;      // 디버그 모드인 경우에 디바이스 생성 플래그를 D3D11_CREATE_DEVICE_DEBUG로 설정해줌.
+	swapCreateFlags |= D3D11_CREATE_DEVICE_DEBUG;        // 디버그 모드인 경우에 디바이스 생성 플래그를 D3D11_CREATE_DEVICE_DEBUG로 설정해줌.
 #endif
+	swapCreateFlags |= D3D11_CREATE_DEVICE_BGRA_SUPPORT; // Direct2D와의 호환성을 위해 D3D11_CREATE_DEVICE_BGRA_SUPPORT 플래그 추가. 
 
 	HRESULT hr; // API 함수가 리턴하는 HRESULT를 받아와 저장해 두기 위함.
 
@@ -129,6 +131,9 @@ bool D3DGraphics::Initialize(int screenWidth, int screenHeight, bool vsync, HWND
 	float fieldOfView, screenAspect;
 	fieldOfView = 3.141592654f / 4.0f;
 	screenAspect = (float)screenWidth / (float)screenHeight;
+
+	// DPI 얻어오기.
+	wndDpi = GetDpiForWindow(hWnd);
 
 	// 투영 행렬을 생성.
 	m_projectionMatrix = dx::XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);

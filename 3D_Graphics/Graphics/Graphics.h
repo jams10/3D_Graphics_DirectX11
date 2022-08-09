@@ -8,6 +8,7 @@ const float SCREEN_DEPTH = 1000.0f;
 const float SCREEN_NEAR = 0.1f;
 
 class D3DGraphics;
+class D2DGraphics;
 class Camera;
 class Model;
 class TextureShader;
@@ -34,6 +35,7 @@ private:
 
 private:
 	D3DGraphics* m_pD3D;
+	D2DGraphics* m_pD2D;
 	Camera* m_pCamera;
 	Camera* m_pFixedCamera;
 	Model* m_pModel;

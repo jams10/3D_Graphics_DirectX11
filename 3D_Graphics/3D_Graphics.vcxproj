@@ -149,6 +149,7 @@
     <ClCompile Include="ErrorHandle\CustomException.cpp" />
     <ClCompile Include="ErrorHandle\DxgiInfoManager.cpp" />
     <ClCompile Include="ErrorHandle\StandardException.cpp" />
+    <ClCompile Include="Graphics\D2DGraphics.cpp" />
     <ClCompile Include="Graphics\D3DGraphics.cpp" />
     <ClCompile Include="Graphics\Graphics.cpp" />
     <ClCompile Include="Objects\Bitmap.cpp" />
@@ -194,10 +195,12 @@
     <ClInclude Include="dxtex\include\dxtex\scoped.h" />
     <ClInclude Include="dxtex\scoped.h" />
     <ClInclude Include="ErrorHandle\CustomException.h" />
+    <ClInclude Include="ErrorHandle\D2DGraphicsExceptionMacros.h" />
     <ClInclude Include="ErrorHandle\D3DGraphicsExceptionMacros.h" />
     <ClInclude Include="ErrorHandle\DxgiInfoManager.h" />
     <ClInclude Include="ErrorHandle\StandardException.h" />
     <ClInclude Include="ErrorHandle\WindowsExceptionMacros.h" />
+    <ClInclude Include="Graphics\D2DGraphics.h" />
     <ClInclude Include="Graphics\D3DGraphics.h" />
     <ClInclude Include="Graphics\Graphics.h" />
     <ClInclude Include="Objects\Bitmap.h" />

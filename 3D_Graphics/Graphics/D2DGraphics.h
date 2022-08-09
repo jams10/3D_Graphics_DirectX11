@@ -1,15 +1,17 @@
 #pragma once
 
-#include <Windows/WindowsHeaders.h>
+#include <Windows/\WindowsHeaders.h>
 #include <ErrorHandle/CustomException.h>
 #include <ErrorHandle/DxgiInfoManager.h>
-#include <DirectXMath.h>
 #include <d3d11.h>
+#include <d2d1.h>
+#include <d2d1_1.h>
+#include <dwrite.h>
 #include <wrl.h>
 
-namespace dx = DirectX;
+class D3DGraphics;
 
-class D3DGraphics
+class D2DGraphics
 {
 	friend class Graphics;
 #pragma region Exception
@@ -60,44 +62,28 @@ private:
 #endif
 
 public:
-	D3DGraphics();
-	D3DGraphics(const D3DGraphics&) = delete;
-	D3DGraphics& operator=(const D3DGraphics&) = delete;
-	~D3DGraphics();
-	
-	bool Initialize(int screenWidth, int screenHeight, bool vsync, HWND hWnd, float screenDepth, float screenNear);
+	D2DGraphics(const D3DGraphics& D3DGraphics);
+	D2DGraphics(const D2DGraphics&) = delete;
+	D2DGraphics& operator=(const D2DGraphics&) = delete;
+	~D2DGraphics();
 
-	void BeginFrame(float red, float green, float blue, float alpha) noexcept;
+	void Initialize(const D3DGraphics& D3DGraphics);
+	void Release();
+
+	void BeginFrame();
 	void EndFrame();
 
 public:
-	ID3D11Device* GetDevice() const { return m_pDevice.Get(); }
-	ID3D11DeviceContext* GetContext() const { return m_pContext.Get(); }
-	IDXGISwapChain* GetSwapChain() const { return m_pSwap.Get(); }
-	DxgiInfoManager& GetInfoManager() { return infoManager; }
-	UINT GetDPI() const { return wndDpi; }
-	
-	dx::XMMATRIX GetProjectionMatrix() { return m_projectionMatrix; }
-	dx::XMMATRIX GetWorldMatrix() { return m_worldMatrix; }
-	dx::XMMATRIX GetOrthMatrix() { return m_orthoMatrix; }
-
-	void TurnZBufferOn();
-	void TurnZBufferOff();
+	void DrawBox(const int& left, const int& top, const int& right, const int& bottom);
+	void WriteText(std::wstring s);
 
 private:
-	bool m_vsync_enabled;
-	bool imguiEnabled;
-	UINT wndDpi;
-
-	dx::XMMATRIX m_projectionMatrix;
-	dx::XMMATRIX m_worldMatrix;
-	dx::XMMATRIX m_orthoMatrix;
-
-	Microsoft::WRL::ComPtr<ID3D11Device> m_pDevice;
-	Microsoft::WRL::ComPtr<IDXGISwapChain> m_pSwap;
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_pContext;
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_pTarget;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_pDSV;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_pDepthStencilState;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_pDepthDisabledStencilState;
+	ID2D1Factory1* m_pFactory;
+	IDWriteFactory* m_pWriteFactory;
+	ID2D1Device* m_pDevice;
+	ID2D1DeviceContext* m_pContext;
+	ID2D1Bitmap1* m_pBitmap;
+	IDXGISurface* m_pSurface;
+	ID2D1SolidColorBrush* m_pBrush;
+	IDWriteTextFormat* m_pTextFormat;
 };
