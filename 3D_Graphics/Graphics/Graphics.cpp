@@ -11,6 +11,7 @@
 #include <Objects/Light.h>
 #include <Objects/Bitmap.h>
 #include <Input/Keyboard.h>
+#include <Sound/DXSound.h>
 #include <imgui/imgui.h>
 #include <stdexcept>
 
@@ -69,9 +70,9 @@ void Graphics::Shutdown()
     SAFE_RELEASE(m_pBitmap)
 }
 
-bool Graphics::Frame()
+bool Graphics::Frame(DXSound* pSound)
 {
-    if (!Render())
+    if (!Render(pSound))
     {
         return false;
     }
@@ -79,7 +80,7 @@ bool Graphics::Frame()
     return true;
 }
 
-bool Graphics::Render()
+bool Graphics::Render(DXSound* pSound)
 {
     m_pD3D->BeginFrame(0.5f, 0.5f, 0.5f, 1.f);
     m_pD2D->BeginFrame();
@@ -117,6 +118,7 @@ bool Graphics::Render()
     m_pModel->SpawnControlWindow();
     m_pCamera->SpawnControlWindow();
     m_pLight->SpawnControlWindow();
+    pSound->SpawnControlWindow();
 
     m_pD2D->EndFrame();
     // 렌더링된 씬을 화면에 표시.

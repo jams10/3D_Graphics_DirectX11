@@ -15,6 +15,7 @@ class TextureShader;
 class LightShader;
 class Light;
 class Bitmap;
+class DXSound;
 
 class Graphics
 {
@@ -26,12 +27,12 @@ public:
 
 	bool Initialize(int, int, HWND);
 	void Shutdown();
-	bool Frame();
+	bool Frame(DXSound* pSound);
 
 	Camera* GetCamera() { return m_pCamera; }
 
 private:
-	bool Render();
+	bool Render(DXSound* pSound);
 
 private:
 	D3DGraphics* m_pD3D;

@@ -3,6 +3,7 @@
 #include <Windows/WindowsHeaders.h>
 #include <Windows/Window.h>
 #include <Graphics/Graphics.h>
+#include <Sound/DXSound.h>
 #include <Utils/GameTimer.h>
 #include <Utils/ImguiManager.h>
 #include <string>
@@ -24,6 +25,7 @@ private:
 	ImguiManager imgui;
 	Window m_Wnd;
 	Graphics* m_pGfx;
+	DXSound* m_pSound;
 	GameTimer timer;
 	int screenWidth;
 	int screenHeight;

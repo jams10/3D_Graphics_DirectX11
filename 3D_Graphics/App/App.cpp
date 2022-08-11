@@ -23,6 +23,12 @@ bool Application::Initialize()
 		return false;
 	}
 
+	m_pSound = new DXSound();
+	if (m_pSound)
+	{
+		m_pSound->Initialize(m_Wnd.GetWindowHandle());
+	}
+
 	return true;
 }
 
@@ -42,6 +48,12 @@ int Application::Run()
 
 void Application::ShutDown()
 {
+	if (m_pSound)
+	{
+		m_pSound->Shutdown();
+		delete m_pSound;
+		m_pSound = nullptr;
+	}
 	if (m_pGfx)
 	{
 		m_pGfx->Shutdown();
@@ -117,5 +129,5 @@ void Application::Frame()
 	}
 #pragma endregion
 
-	m_pGfx->Frame();
+	m_pGfx->Frame(m_pSound);
 }
