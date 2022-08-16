@@ -4,6 +4,8 @@
 #include <Windows/Window.h>
 #include <Graphics/Graphics.h>
 #include <Sound/DXSound.h>
+#include <Utils/FpsCalculator.h>
+#include <Utils/CpuUsageCalculator.h>
 #include <Utils/GameTimer.h>
 #include <Utils/ImguiManager.h>
 #include <string>
@@ -26,6 +28,8 @@ private:
 	Window m_Wnd;
 	Graphics* m_pGfx;
 	DXSound* m_pSound;
+	FpsCalculator fpsCounter;
+	CpuUsageCalculator cpuCounter;
 	GameTimer timer;
 	int screenWidth;
 	int screenHeight;

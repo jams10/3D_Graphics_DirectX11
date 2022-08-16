@@ -29,6 +29,9 @@ bool Application::Initialize()
 		m_pSound->Initialize(m_Wnd.GetWindowHandle());
 	}
 
+	fpsCounter.Initialize();
+	cpuCounter.Initialize();
+
 	return true;
 }
 
@@ -60,11 +63,14 @@ void Application::ShutDown()
 		delete m_pGfx;
 		m_pGfx = nullptr;
 	}
+	cpuCounter.Shutdown();
 }
 
 void Application::Frame()
 {
+	fpsCounter.Tick();
 	timer.Tick();
+	cpuCounter.Tick();
 	const auto dt = timer.GetDeltaTime();
 
 	while (const auto e = m_Wnd.kbd.ReadKey())
@@ -129,5 +135,5 @@ void Application::Frame()
 	}
 #pragma endregion
 
-	m_pGfx->Frame(m_pSound);
+	m_pGfx->Frame(m_pSound, fpsCounter.GetFps(), cpuCounter.GetCpuPercentage());
 }

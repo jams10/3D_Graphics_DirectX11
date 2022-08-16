@@ -28,7 +28,7 @@ void DXSound::Initialize(HWND hwnd)
 	LoadWaveFile("Sound/Ding.wav", &m_pSecondaryBuffer);
 
 	// secondary buffer에 불러온 wav 오디오 파일을 재생함.
-	PlayWaveFile();
+	// PlayWaveFile();
 }
 
 

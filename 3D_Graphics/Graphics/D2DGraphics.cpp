@@ -116,14 +116,14 @@ void D2DGraphics::DrawBox(const int& left, const int& top, const int& right, con
 	m_pContext->FillRoundedRectangle(rect, m_pBrush);
 }
 
-void D2DGraphics::WriteText(std::wstring s)
+void D2DGraphics::WriteText(std::wstring s, const float& left, const float& top, const float& right, const float& bottom)
 {
 	m_pTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
 	m_pTextFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
 	m_pBrush->SetColor(D2D1_COLOR_F{ 0.0f, 255.0f,236.0f,206.0f });
 	m_pBrush->SetOpacity(1.0f);	
-	D2D1_RECT_F r = { 0, 720 - 256, 256, 720 };
+	D2D1_RECT_F r = { left, top, right, bottom };
 	m_pContext->DrawTextW(s.c_str(), s.size(), m_pTextFormat, r, m_pBrush);
 }
 

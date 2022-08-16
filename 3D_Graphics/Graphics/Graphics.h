@@ -27,12 +27,12 @@ public:
 
 	bool Initialize(int, int, HWND);
 	void Shutdown();
-	bool Frame(DXSound* pSound);
+	bool Frame(DXSound* pSound, int fps, int cpuUsage);
 
 	Camera* GetCamera() { return m_pCamera; }
 
 private:
-	bool Render(DXSound* pSound);
+	bool Render(DXSound* pSound, int fps, int cpuUsage);
 
 private:
 	D3DGraphics* m_pD3D;

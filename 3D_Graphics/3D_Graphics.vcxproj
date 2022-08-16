@@ -170,6 +170,8 @@
     <ClCompile Include="Objects\Camera.cpp" />
     <ClCompile Include="Objects\Model.cpp" />
     <ClCompile Include="Sound\DXSound.cpp" />
+    <ClCompile Include="Utils\CpuUsageCalculator.cpp" />
+    <ClCompile Include="Utils\FpsCalculator.cpp" />
     <ClCompile Include="Utils\GameTimer.cpp" />
     <ClCompile Include="Utils\ImguiMananger.cpp" />
     <ClCompile Include="Utils\StringUtils.cpp" />
@@ -214,7 +216,9 @@
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="Sound\DXSound.h" />
+    <ClInclude Include="Utils\CpuUsageCalculator.h" />
     <ClInclude Include="Utils\CustomMath.h" />
+    <ClInclude Include="Utils\FpsCalculator.h" />
     <ClInclude Include="Utils\ImguiManager.h" />
     <ClInclude Include="imgui\imgui_impl_dx11.h" />
     <ClInclude Include="imgui\imgui_impl_win32.h" />

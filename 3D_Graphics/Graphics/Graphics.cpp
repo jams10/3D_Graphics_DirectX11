@@ -14,6 +14,7 @@
 #include <Sound/DXSound.h>
 #include <imgui/imgui.h>
 #include <stdexcept>
+#include <sstream>
 
 #define SAFE_RELEASE(p) if(p){delete p; p=nullptr;}
 
@@ -70,9 +71,9 @@ void Graphics::Shutdown()
     SAFE_RELEASE(m_pBitmap)
 }
 
-bool Graphics::Frame(DXSound* pSound)
+bool Graphics::Frame(DXSound* pSound, int fps, int cpuUsage)
 {
-    if (!Render(pSound))
+    if (!Render(pSound, fps, cpuUsage))
     {
         return false;
     }
@@ -80,13 +81,15 @@ bool Graphics::Frame(DXSound* pSound)
     return true;
 }
 
-bool Graphics::Render(DXSound* pSound)
+bool Graphics::Render(DXSound* pSound, int fps, int cpuUsage)
 {
     m_pD3D->BeginFrame(0.5f, 0.5f, 0.5f, 1.f);
     m_pD2D->BeginFrame();
-
-    m_pD2D->DrawBox(0, 720 - 256, 256, 720);
-    m_pD2D->WriteText(L"Direct2D 그리기 테스트!");
+    
+    std::wstringstream wss;
+    wss << L"FPS : " << fps << L"\nCPU : " << cpuUsage << L"%";
+    m_pD2D->DrawBox(1280 - 100, 0, 1280, 100);
+    m_pD2D->WriteText(wss.str(), 1280 - 100, 0, 1280, 100);
 
     // 월드, 뷰, 원근 투영, 정사영 투영 행렬을 얻어옴.
     dx::XMMATRIX world = m_pModel->GetWorldMatrix();

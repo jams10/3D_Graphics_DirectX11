@@ -75,7 +75,7 @@ public:
 
 public:
 	void DrawBox(const int& left, const int& top, const int& right, const int& bottom);
-	void WriteText(std::wstring s);
+	void WriteText(std::wstring s, const float& left, const float& top, const float& right, const float& bottom);
 
 private:
 	ID2D1Factory1* m_pFactory;

@@ -183,7 +183,6 @@ void D3DGraphics::EndFrame()
 		ImGui::UpdatePlatformWindows(); // Imgui 창을 업데이트 하고 화면에 보여줌.
 		ImGui::RenderPlatformWindowsDefault();
 	}
-
 	if (m_vsync_enabled)
 	{
 		if (FAILED(hr = m_pSwap->Present(1u, 0u)))
