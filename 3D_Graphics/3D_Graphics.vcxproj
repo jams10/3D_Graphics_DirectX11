@@ -154,6 +154,7 @@
     <ClCompile Include="Graphics\Graphics.cpp" />
     <ClCompile Include="Objects\Bitmap.cpp" />
     <ClCompile Include="Objects\Light.cpp" />
+    <ClCompile Include="Objects\ModelList.cpp" />
     <ClCompile Include="Shaders\LightShader.cpp" />
     <ClCompile Include="Shaders\SolidColorShader.cpp" />
     <ClCompile Include="Graphics\Texture.cpp" />
@@ -172,6 +173,7 @@
     <ClCompile Include="Sound\DXSound.cpp" />
     <ClCompile Include="Utils\CpuUsageCalculator.cpp" />
     <ClCompile Include="Utils\FpsCalculator.cpp" />
+    <ClCompile Include="Utils\Frustum.cpp" />
     <ClCompile Include="Utils\GameTimer.cpp" />
     <ClCompile Include="Utils\ImguiMananger.cpp" />
     <ClCompile Include="Utils\StringUtils.cpp" />
@@ -209,6 +211,7 @@
     <ClInclude Include="Graphics\Graphics.h" />
     <ClInclude Include="Objects\Bitmap.h" />
     <ClInclude Include="Objects\Light.h" />
+    <ClInclude Include="Objects\ModelList.h" />
     <ClInclude Include="Shaders\LightShader.h" />
     <ClInclude Include="Shaders\SolidColorShader.h" />
     <ClInclude Include="Graphics\Texture.h" />
@@ -219,6 +222,7 @@
     <ClInclude Include="Utils\CpuUsageCalculator.h" />
     <ClInclude Include="Utils\CustomMath.h" />
     <ClInclude Include="Utils\FpsCalculator.h" />
+    <ClInclude Include="Utils\Frustum.h" />
     <ClInclude Include="Utils\ImguiManager.h" />
     <ClInclude Include="imgui\imgui_impl_dx11.h" />
     <ClInclude Include="imgui\imgui_impl_win32.h" />

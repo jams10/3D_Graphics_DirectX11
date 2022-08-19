@@ -16,6 +16,8 @@ class LightShader;
 class Light;
 class Bitmap;
 class DXSound;
+class Frustum;
+class ModelList;
 
 class Graphics
 {
@@ -44,4 +46,6 @@ private:
 	LightShader* m_pLightShader;
 	Light* m_pLight;
 	Bitmap* m_pBitmap;
+	Frustum* m_pFrustum;
+	ModelList* m_pModelList;
 };
