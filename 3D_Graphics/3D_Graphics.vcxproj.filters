@@ -123,6 +123,12 @@
     <ClCompile Include="Objects\ModelList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shaders\MultiTextureShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\TextureArray.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App\App.h">
@@ -302,6 +308,12 @@
     <ClInclude Include="Objects\ModelList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shaders\MultiTextureShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\TextureArray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\SolidColorVS.hlsl" />
@@ -312,6 +324,8 @@
     <FxCompile Include="Shaders\DiffuseLightingPS.hlsl" />
     <FxCompile Include="Shaders\SpecularLightingVS.hlsl" />
     <FxCompile Include="Shaders\SpecularLightingPS.hlsl" />
+    <FxCompile Include="Shaders\MultiTextureVS.hlsl" />
+    <FxCompile Include="Shaders\MultiTexturePS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dxtex\DirectXTex.inl">

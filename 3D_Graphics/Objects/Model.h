@@ -3,7 +3,7 @@
 #include<Graphics/D3DGraphics.h>
 #include<DirectXMath.h>
 
-class Texture;
+class TextureArray;
 
 class Model
 {
@@ -11,10 +11,10 @@ public:
 	Model();
 	~Model();
 
-	void Initialize(D3DGraphics& gfx, std::string modelFilePath, std::string textureFilePath);
+	void Initialize(D3DGraphics& gfx, std::string modelFilePath, std::string textureFilePath1, std::string textureFilePath2);
 	void Bind(D3DGraphics& gfx);
 	unsigned int GetIndexCount() { return m_indexCount; }
-	ID3D11ShaderResourceView* GetTexture();
+	ID3D11ShaderResourceView** GetTextureArray();
 	DirectX::XMMATRIX GetWorldMatrix() const noexcept;
 	void SpawnControlWindow() noexcept;
 
@@ -22,7 +22,7 @@ private:
 	void InitializeBuffers(D3DGraphics& gfx);
 	void BindBuffers(D3DGraphics& gfx);
 
-	void LoadTexture(D3DGraphics& gfx, std::string filePath);
+	void LoadTextures(D3DGraphics& gfx, std::string filePath1, std::string filePath2);
 	void ReleaseTexture();
 
 	void LoadModel(std::string filePath);
@@ -57,7 +57,7 @@ private:
 	unsigned int m_indexCount;
 	VertexType* m_pVertices;
 	unsigned long* m_pIndices;
-	Texture* m_pTexture;
+	TextureArray* m_pTextureArray;
 	ModelType* m_pModel;
 	std::string FileFormat;
 	std::wstring FileInfoString;

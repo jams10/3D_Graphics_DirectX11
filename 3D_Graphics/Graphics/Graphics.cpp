@@ -3,6 +3,7 @@
 #include <Graphics/D2DGraphics.h>
 #include <Shaders/TextureShader.h>
 #include <Shaders/LightShader.h>
+#include <Shaders/MultiTextureShader.h>
 #include <ErrorHandle/DxgiInfoManager.h>
 #include <ErrorHandle/CustomException.h>
 #include <ErrorHandle/D3DGraphicsExceptionMacros.h>
@@ -27,6 +28,7 @@ Graphics::Graphics()
     m_pCamera = nullptr;
     m_pModel = nullptr;
     m_pLightShader = nullptr;
+    m_pMultiTextureShader = nullptr;
     m_pBitmap = nullptr;
     m_pFrustum = nullptr;
     m_pModelList = nullptr;
@@ -45,18 +47,18 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pD2D->Initialize(*m_pD3D);
 
     m_pModel = new Model();
-    m_pModel->Initialize(*m_pD3D, "Resources\\Models\\Sphere.model", "Resources\\Images\\seafloor.png");
+    m_pModel->Initialize(*m_pD3D, "Resources\\Models\\Cube.model", "Resources\\Images\\stone01.png", "Resources\\Images\\dirt01.png");
 
     m_pCamera = new Camera();
     m_pFixedCamera = new Camera();
 
     m_pLight = new Light();
 
-    m_pTextureShader = new TextureShader();
-    m_pTextureShader->Initialize(*m_pD3D);
-
     m_pLightShader = new LightShader();
     m_pLightShader->Initialize(*m_pD3D);
+
+    m_pMultiTextureShader = new MultiTextureShader();
+    m_pMultiTextureShader->Initialize(*m_pD3D, Wnd);
 
     m_pBitmap = new Bitmap();
     m_pBitmap->Initialize(*m_pD3D, screenWidth, screenHeight, "Resources\\Images\\seafloor.png", 256, 256);
@@ -74,8 +76,8 @@ void Graphics::Shutdown()
     SAFE_RELEASE(m_pFrustum)
     SAFE_RELEASE(m_pModelList)
     SAFE_RELEASE(m_pBitmap)
+    SAFE_RELEASE(m_pMultiTextureShader)
     SAFE_RELEASE(m_pLightShader)
-    SAFE_RELEASE(m_pTextureShader)
     SAFE_RELEASE(m_pLight)
     SAFE_RELEASE(m_pCamera)
     SAFE_RELEASE(m_pModel)
@@ -105,60 +107,23 @@ bool Graphics::Render(DXSound* pSound, int fps, int cpuUsage)
     m_pD2D->WriteText(wss_perf.str(), 1280 - 100, 0, 1280, 100);
 
     // 월드, 뷰, 원근 투영, 정사영 투영 행렬을 얻어옴.
+    dx::XMMATRIX world = m_pModel->GetWorldMatrix();
     dx::XMMATRIX worldFor2D = dx::XMMatrixIdentity();
     dx::XMMATRIX view = m_pCamera->GetViewMatrix();
     dx::XMMATRIX viewFor2D = m_pFixedCamera->GetViewMatrix();
     dx::XMMATRIX projection = m_pD3D->GetProjectionMatrix();
     dx::XMMATRIX orth = m_pD3D->GetOrthMatrix();
 
-#pragma region Frustum Culing Test
+    m_pModel->Bind(*m_pD3D);
 
-    float posX = 0, posY = 0, posZ = 0, radius = 0;
-    dx::XMFLOAT4 color;
-    dx::XMMATRIX world;
-    int modelCount = 0, renderCount = 0; // modelCount : 생성하고자 하는 모델의 개수, renderCount : 컬링을 통과해 실제로 그려지는 모델의 개수.
-    // 절두체 생성.
-    m_pFrustum->ConstructFrustum(SCREEN_DEPTH, projection, view);
-
-    modelCount = m_pModelList->GetModelCount();
-
-    for (int i = 0; i < modelCount; ++i)
+    float gamma = 2.0f;
+    if (ImGui::Begin("Gamma"))
     {
-        // 랜덤으로 모델의 색상과 위치를 생성해 얻어옴.
-        m_pModelList->GetData(i, posX, posY, posZ, color);
-
-        // 구체 모델의 반지름은 1로 설정했음.
-        radius = 1.0f;
-
-        // 구체에 대해 절두체 컬링을 수행 했을 때 통과한 경우.
-        if (m_pFrustum->CheckSphere(posX, posY, posZ, radius))
-        {
-            // 물체의 위치를 가지고 월드 변환 행렬을 만들어 물체가 해당 월드 공간 위치에 그려질 수 있도록 함.
-            world = DirectX::XMMatrixTranslation(posX, posY, posZ);
-
-            // 모델을 구성하는 정점과 인덱스 버퍼를 파이프라인에 바인딩 함.
-            m_pModel->Bind(*m_pD3D);
-
-            // 3D 모델을 light shader로 그려줌.
-            m_pLightShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, m_pCamera->GetPosition(),
-                m_pModel->GetTexture(), m_pLight->GetAmbientColor(), color, m_pLight->GetLightDirection(),
-                m_pLight->GetSpecularColor(), m_pLight->GetSpecularPower());
-
-            // 월드 행렬을 단위 행렬로 초기화.
-            world = DirectX::XMMatrixIdentity();
-
-            // 그려준 물체의 개수를 증가시켜줌.
-            renderCount++;
-        }
+        ImGui::SliderFloat("value", &gamma, -10.0f, 10.0f, "%.1f");
     }
+    ImGui::End();
 
-    // 컬링을 통과해 화면에 그려지는 모델의 개수를 표시해줌.
-    std::wstringstream wss_culling;
-    wss_culling << L"Rendered Models Count : " << renderCount << L" | " << modelCount;
-    m_pD2D->DrawBox(1280 - 400, 0, 1280 - 100, 100);
-    m_pD2D->WriteText(wss_culling.str(), 1280 - 400, 0, 1280 - 100, 100);
-
-#pragma endregion
+    m_pMultiTextureShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, gamma, m_pModel->GetTextureArray());
 
 #pragma region 2D Rendering
     //// 2D 렌더링을 위해 깊이 버퍼를 꺼줌.

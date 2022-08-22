@@ -4,7 +4,7 @@
 #include <ErrorHandle/DxgiInfoManager.h>
 #include <ErrorHandle/D3DGraphicsExceptionMacros.h>
 #include <ErrorHandle/StandardException.h>
-#include <Graphics/Texture.h>
+#include <Graphics/TextureArray.h>
 #include <Utils/StringUtils.h>
 #include <Utils/ObjFileLoader.h>
 #include <fstream>
@@ -17,7 +17,7 @@ Model::Model()
 {
     m_pVertices = nullptr;
     m_pIndices = nullptr;
-    m_pTexture = nullptr;
+    m_pTextureArray = nullptr;
     m_pModel = nullptr;
     Reset();
 }
@@ -26,13 +26,13 @@ Model::~Model()
 {
 }
 
-void Model::Initialize(D3DGraphics& gfx, std::string modelFilePath, std::string textureFilePath)
+void Model::Initialize(D3DGraphics& gfx, std::string modelFilePath, std::string textureFilePath1, std::string textureFilePath2)
 {
     LoadModel(modelFilePath);
 
     InitializeBuffers(gfx);
 
-    LoadTexture(gfx, textureFilePath);
+    LoadTextures(gfx, textureFilePath1, textureFilePath2);
 }
 
 void Model::Bind(D3DGraphics& gfx)
@@ -40,9 +40,9 @@ void Model::Bind(D3DGraphics& gfx)
     BindBuffers(gfx);
 }
 
-ID3D11ShaderResourceView* Model::GetTexture()
+ID3D11ShaderResourceView** Model::GetTextureArray()
 {
-    return m_pTexture->GetTextureView();
+    return m_pTextureArray->GetTextureArray();
 }
 
 void Model::InitializeBuffers(D3DGraphics& gfx)
@@ -112,18 +112,20 @@ void Model::BindBuffers(D3DGraphics& gfx)
     return;
 }
 
-void Model::LoadTexture(D3DGraphics& gfx, std::string filePath)
+void Model::LoadTextures(D3DGraphics& gfx, std::string filePath1, std::string filePath2)
 {
-    m_pTexture = new Texture(gfx, filePath);
-    ALLOCATE_EXCEPT(m_pTexture, "Can't allocate a texture instance!")
+    m_pTextureArray = new TextureArray();
+    m_pTextureArray->Initialize(gfx, filePath1, filePath2);
+    ALLOCATE_EXCEPT(m_pTextureArray, "Can't allocate a texture instance!")
 }
 
 void Model::ReleaseTexture()
 {
-    if (m_pTexture)
+    if (m_pTextureArray)
     {
-        delete m_pTexture;
-        m_pTexture = nullptr;
+        m_pTextureArray->Shutdown();
+        delete m_pTextureArray;
+        m_pTextureArray = nullptr;
     }
 }
 
