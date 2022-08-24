@@ -6,27 +6,21 @@
 
 using namespace DirectX;
 
-class MultiTextureShader
+class LightMapShader
 {
 public:
-	MultiTextureShader();
+	LightMapShader();
 
 	void Initialize(D3DGraphics& gfx, HWND hwnd);
-	void Bind(D3DGraphics& gfx, int indexCount, XMMATRIX world, XMMATRIX view, XMMATRIX projection, float Gamma, ID3D11ShaderResourceView** textureArray);
+	void Bind(D3DGraphics& gfx, int indexCount, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView** textureArray);
 
 private:
 	void InitializeShaders(D3DGraphics& gfx, HWND hwnd, const std::wstring& vsFileName, const std::wstring& psFileName);
 
-	void SetShaderParameters(D3DGraphics& gfx, XMMATRIX world, XMMATRIX view, XMMATRIX projection, float Gamma, ID3D11ShaderResourceView** textureArray);
+	void SetShaderParameters(D3DGraphics& gfx, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView** textureArray);
 	void BindShader(D3DGraphics& gfx, int indexCount);
 
 private:
-	struct GammaBufferType
-	{
-		float			  gamma;
-		DirectX::XMFLOAT3 padding;
-	};
-
 	struct MatrixBufferType
 	{
 		XMMATRIX world;
@@ -38,7 +32,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> m_pVertexShader;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pPixelShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_pLayout;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> m_pGammaBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_pMatrixBuffer;
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> m_pSamplerState;
 };

@@ -51,10 +51,10 @@ void DXSound::InitializeDirectSound(HWND hwnd)
 	WAVEFORMATEX waveFormat;
 
 	// 기본 사운드 장치에 대한 Directsound 인터페이스 포인터를 초기화.
-	GFX_THROW_INFO(DirectSoundCreate8(NULL, &m_pDirectSound, NULL));
+	DXSOUND_THROW_INFO(DirectSoundCreate8(NULL, &m_pDirectSound, NULL));
 
 	// 협력 수준(cooperative level)을 priority로 설정해 메인 사운드 버퍼의 형식이 수정될 수 있도록 함.
-	GFX_THROW_INFO(m_pDirectSound->SetCooperativeLevel(hwnd, DSSCL_PRIORITY));
+	DXSOUND_THROW_INFO(m_pDirectSound->SetCooperativeLevel(hwnd, DSSCL_PRIORITY));
 
 	// 메인 버퍼 서술자를 설정.
 	bufferDesc.dwSize = sizeof(DSBUFFERDESC);
@@ -65,7 +65,7 @@ void DXSound::InitializeDirectSound(HWND hwnd)
 	bufferDesc.guid3DAlgorithm = GUID_NULL;
 
 	// 기본 사운드 장치에 대한 메인 사운드 버퍼의 컨트롤을 얻어옴.
-	GFX_THROW_INFO(m_pDirectSound->CreateSoundBuffer(&bufferDesc, &m_pPrimaryBuffer, NULL));
+	DXSOUND_THROW_INFO(m_pDirectSound->CreateSoundBuffer(&bufferDesc, &m_pPrimaryBuffer, NULL));
 
 	// 메인 사운드 버퍼의 형식을 설정함.
 	// 우리는 형식을 16-bit 스테레오로 초당 44,100개의 샘플로 녹음되는 .WAV 파일 형식을 사용할 것임.(CD 오디오 포맷).
@@ -78,7 +78,7 @@ void DXSound::InitializeDirectSound(HWND hwnd)
 	waveFormat.cbSize = 0;
 
 	// 위에서 지정해준 wav 파일 형식으로 메인 버퍼를 설정.
-	GFX_THROW_INFO(m_pPrimaryBuffer->SetFormat(&waveFormat));
+	DXSOUND_THROW_INFO(m_pPrimaryBuffer->SetFormat(&waveFormat));
 
 }
 
@@ -193,11 +193,11 @@ void DXSound::LoadWaveFile(const char* filename, IDirectSoundBuffer8** secondary
 	bufferDesc.guid3DAlgorithm = GUID_NULL;
 
 	// 위에서 설정해준 버퍼 세팅에 따라 임시 사운드 버퍼를 생성함.
-	GFX_THROW_INFO(m_pDirectSound->CreateSoundBuffer(&bufferDesc, &tempBuffer, NULL));
+	DXSOUND_THROW_INFO(m_pDirectSound->CreateSoundBuffer(&bufferDesc, &tempBuffer, NULL));
 
 	// Test the buffer format against the direct sound 8 interface and create the secondary buffer.
 	// direct sound 8 인터페이스에 대해 버퍼 형식을 테스트하고, 보조 버퍼를 생성함.
-	GFX_THROW_INFO(tempBuffer->QueryInterface(IID_IDirectSoundBuffer8, (void**)&*secondaryBuffer));
+	DXSOUND_THROW_INFO(tempBuffer->QueryInterface(IID_IDirectSoundBuffer8, (void**)&*secondaryBuffer));
 
 	// 임시 버퍼를 해제해줌.
 	tempBuffer->Release();
@@ -228,13 +228,13 @@ void DXSound::LoadWaveFile(const char* filename, IDirectSoundBuffer8** secondary
 	}
 
 	// 보조 버퍼에 wave 파일 데이터를 쓰기 위해 잠궈줌.
-	GFX_THROW_INFO((*secondaryBuffer)->Lock(0, waveFileHeader.dataSize, (void**)&bufferPtr, (DWORD*)&bufferSize, NULL, 0, 0));
+	DXSOUND_THROW_INFO((*secondaryBuffer)->Lock(0, waveFileHeader.dataSize, (void**)&bufferPtr, (DWORD*)&bufferSize, NULL, 0, 0));
 
 	// wave 데이터를 버퍼에 복사해줌.
 	memcpy(bufferPtr, waveData, waveFileHeader.dataSize);
 
 	// 보조 버퍼에 데이터를 다 썼다면 다시 잠금을 풀어줌.
-	GFX_THROW_INFO((*secondaryBuffer)->Unlock((void*)bufferPtr, bufferSize, NULL, 0));
+	DXSOUND_THROW_INFO((*secondaryBuffer)->Unlock((void*)bufferPtr, bufferSize, NULL, 0));
 
 	// 보조 버퍼에 데이터를 써주었으므로 필요없는 임시 버퍼를 해제해줌.
 	delete[] waveData;
@@ -274,13 +274,13 @@ void DXSound::PlayWaveFile()
 	HRESULT hr;
 
 	// 재생 위치를 맨 처음으로 설정.
-	GFX_THROW_INFO(m_pSecondaryBuffer->SetCurrentPosition(0));
+	DXSOUND_THROW_INFO(m_pSecondaryBuffer->SetCurrentPosition(0));
 
 	// 볼륨을 100%로 설정.
-	GFX_THROW_INFO(m_pSecondaryBuffer->SetVolume(m_volume));
+	DXSOUND_THROW_INFO(m_pSecondaryBuffer->SetVolume(m_volume));
 
 	// 보조 버퍼에 있는 음원을 재생 시켜줌.
-	GFX_THROW_INFO(m_pSecondaryBuffer->Play(0, 0, 0));
+	DXSOUND_THROW_INFO(m_pSecondaryBuffer->Play(0, 0, 0));
 }
 
 #pragma region Exception

@@ -1,26 +1,26 @@
-#include "MultiTextureShader.h"
+#include "LightMapShader.h"
 #include <d3dcompiler.h>
 #include <ErrorHandle/D3DGraphicsExceptionMacros.h>
 
-MultiTextureShader::MultiTextureShader()
+LightMapShader::LightMapShader()
 {
 }
 
-void MultiTextureShader::Initialize(D3DGraphics& gfx, HWND hwnd)
+void LightMapShader::Initialize(D3DGraphics& gfx, HWND hwnd)
 {
-    InitializeShaders(gfx, hwnd, L"Shaders/MultiTextureVS.cso", L"Shaders/MultiTexturePS.cso");
+	InitializeShaders(gfx, hwnd, L"Shaders/LightMapVS.cso", L"Shaders/LightMapPS.cso");
 }
 
-void MultiTextureShader::Bind(D3DGraphics& gfx, int indexCount, XMMATRIX world, XMMATRIX view, XMMATRIX projection, float Gamma, ID3D11ShaderResourceView** textureArray)
+void LightMapShader::Bind(D3DGraphics& gfx, int indexCount, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView** textureArray)
 {
 	// 월드, 뷰, 투영 행렬 설정해줌.
-	SetShaderParameters(gfx, world, view, projection, Gamma, textureArray);
+	SetShaderParameters(gfx, world, view, projection, textureArray);
 
 	// 파이프라인에 자원들을 바인딩.
 	BindShader(gfx, indexCount);
 }
 
-void MultiTextureShader::InitializeShaders(D3DGraphics& gfx, HWND hwnd, const std::wstring& vsFileName, const std::wstring& psFileName)
+void LightMapShader::InitializeShaders(D3DGraphics& gfx, HWND hwnd, const std::wstring& vsFileName, const std::wstring& psFileName)
 {
 	INFOMAN(gfx);
 	ID3DBlob* vertexShaderBuffer;
@@ -75,16 +75,6 @@ void MultiTextureShader::InitializeShaders(D3DGraphics& gfx, HWND hwnd, const st
 	pixelShaderBuffer->Release();
 	pixelShaderBuffer = nullptr;
 
-	// 픽셀 셰이더에서 사용할 행렬들을 담은 상수 버퍼에 대한 서술자를 세팅.
-	D3D11_BUFFER_DESC gammaBufferDesc;
-	gammaBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	gammaBufferDesc.ByteWidth = sizeof(GammaBufferType);
-	gammaBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	gammaBufferDesc.CPUAccessFlags = 0;
-	gammaBufferDesc.MiscFlags = 0;
-	// 픽셀 셰이더를 위한 상수 버퍼 생성.
-	GFX_THROW_INFO(gfx.GetDevice()->CreateBuffer(&gammaBufferDesc, NULL, &m_pGammaBuffer));
-
 	// 정점 셰이더에서 사용할 행렬들을 담은 상수 버퍼에 대한 서술자를 세팅.
 	D3D11_BUFFER_DESC matrixBufferDesc;
 	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -116,7 +106,7 @@ void MultiTextureShader::InitializeShaders(D3DGraphics& gfx, HWND hwnd, const st
 	GFX_THROW_INFO(gfx.GetDevice()->CreateSamplerState(&samplerDesc, &m_pSamplerState));
 }
 
-void MultiTextureShader::SetShaderParameters(D3DGraphics& gfx, XMMATRIX world, XMMATRIX view, XMMATRIX projection, float Gamma, ID3D11ShaderResourceView** textureArray)
+void LightMapShader::SetShaderParameters(D3DGraphics& gfx, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView** textureArray)
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBufferType* dataPtr;
@@ -128,8 +118,8 @@ void MultiTextureShader::SetShaderParameters(D3DGraphics& gfx, XMMATRIX world, X
 	projection = XMMatrixTranspose(projection);
 
 	INFOMAN(gfx)
-	// 상수 버퍼에 값을 쓰기 위해 lock.
-	GFX_THROW_INFO(gfx.GetContext()->Map(m_pMatrixBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource));
+		// 상수 버퍼에 값을 쓰기 위해 lock.
+		GFX_THROW_INFO(gfx.GetContext()->Map(m_pMatrixBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource));
 
 	// lock을 통해 얻어온 매핑된 리소스에서 상수 버퍼의 데이터에 대한 포인터를 얻어옴.
 	dataPtr = (MatrixBufferType*)mappedResource.pData;
@@ -150,15 +140,9 @@ void MultiTextureShader::SetShaderParameters(D3DGraphics& gfx, XMMATRIX world, X
 
 	// 픽셀 셰이더에서 사용할 텍스쳐 자원을 설정.
 	gfx.GetContext()->PSSetShaderResources(0, 2, textureArray);
-
-	GammaBufferType cb;
-	cb.gamma = Gamma;
-
-	gfx.GetContext()->UpdateSubresource(m_pGammaBuffer.Get(), 0, NULL, &cb, 0, 0);
-	gfx.GetContext()->PSSetConstantBuffers(bufferNumber, 1, m_pGammaBuffer.GetAddressOf());
 }
 
-void MultiTextureShader::BindShader(D3DGraphics& gfx, int indexCount)
+void LightMapShader::BindShader(D3DGraphics& gfx, int indexCount)
 {
 	// 정점 입력 레이아웃을 바인딩 해줌.
 	gfx.GetContext()->IASetInputLayout(m_pLayout.Get());

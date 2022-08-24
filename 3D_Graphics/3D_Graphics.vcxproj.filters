@@ -129,6 +129,9 @@
     <ClCompile Include="Graphics\TextureArray.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shaders\LightMapShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App\App.h">
@@ -314,6 +317,9 @@
     <ClInclude Include="Graphics\TextureArray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shaders\LightMapShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\SolidColorVS.hlsl" />
@@ -326,6 +332,8 @@
     <FxCompile Include="Shaders\SpecularLightingPS.hlsl" />
     <FxCompile Include="Shaders\MultiTextureVS.hlsl" />
     <FxCompile Include="Shaders\MultiTexturePS.hlsl" />
+    <FxCompile Include="Shaders\LightMapVS.hlsl" />
+    <FxCompile Include="Shaders\LightMapPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dxtex\DirectXTex.inl">
