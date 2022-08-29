@@ -26,13 +26,14 @@ Model::~Model()
 {
 }
 
-void Model::Initialize(D3DGraphics& gfx, std::string modelFilePath, std::string textureFilePath1, std::string textureFilePath2)
+void Model::Initialize(D3DGraphics& gfx, std::string modelFilePath, 
+                       std::string textureFilePath1, std::string textureFilePath2, std::string textureFilePath3)
 {
     LoadModel(modelFilePath);
 
     InitializeBuffers(gfx);
 
-    LoadTextures(gfx, textureFilePath1, textureFilePath2);
+    LoadTextures(gfx, textureFilePath1, textureFilePath2, textureFilePath3);
 }
 
 void Model::Bind(D3DGraphics& gfx)
@@ -112,10 +113,10 @@ void Model::BindBuffers(D3DGraphics& gfx)
     return;
 }
 
-void Model::LoadTextures(D3DGraphics& gfx, std::string filePath1, std::string filePath2)
+void Model::LoadTextures(D3DGraphics& gfx, std::string filePath1, std::string filePath2, std::string filePath3)
 {
     m_pTextureArray = new TextureArray();
-    m_pTextureArray->Initialize(gfx, filePath1, filePath2);
+    m_pTextureArray->Initialize(gfx, filePath1, filePath2, filePath3);
     ALLOCATE_EXCEPT(m_pTextureArray, "Can't allocate a texture instance!")
 }
 

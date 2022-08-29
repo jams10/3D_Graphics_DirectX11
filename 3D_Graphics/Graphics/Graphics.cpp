@@ -3,7 +3,7 @@
 #include <Graphics/D2DGraphics.h>
 #include <Shaders/TextureShader.h>
 #include <Shaders/LightShader.h>
-#include <Shaders/LightMapShader.h>
+#include <Shaders/AlphaMapShader.h>
 #include <ErrorHandle/DxgiInfoManager.h>
 #include <ErrorHandle/CustomException.h>
 #include <ErrorHandle/D3DGraphicsExceptionMacros.h>
@@ -28,7 +28,7 @@ Graphics::Graphics()
     m_pCamera = nullptr;
     m_pModel = nullptr;
     m_pLightShader = nullptr;
-    m_pLightMapShader = nullptr;
+    m_pAlphaMapShader = nullptr;
     m_pBitmap = nullptr;
     m_pFrustum = nullptr;
     m_pModelList = nullptr;
@@ -47,7 +47,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pD2D->Initialize(*m_pD3D);
 
     m_pModel = new Model();
-    m_pModel->Initialize(*m_pD3D, "Resources\\Models\\Cube.model", "Resources\\Images\\stone01.png", "Resources\\Images\\light01.png");
+    m_pModel->Initialize(*m_pD3D, "Resources\\Models\\Cube.model", "Resources\\Images\\stone01.png", "Resources\\Images\\dirt01.png", "Resources\\Images\\alpha01.png");
 
     m_pCamera = new Camera();
     m_pFixedCamera = new Camera();
@@ -57,8 +57,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pLightShader = new LightShader();
     m_pLightShader->Initialize(*m_pD3D);
 
-    m_pLightMapShader = new LightMapShader();
-    m_pLightMapShader->Initialize(*m_pD3D, Wnd);
+    m_pAlphaMapShader = new AlphaMapShader();
+    m_pAlphaMapShader->Initialize(*m_pD3D, Wnd);
 
     m_pBitmap = new Bitmap();
     m_pBitmap->Initialize(*m_pD3D, screenWidth, screenHeight, "Resources\\Images\\seafloor.png", 256, 256);
@@ -76,7 +76,7 @@ void Graphics::Shutdown()
     SAFE_RELEASE(m_pFrustum)
     SAFE_RELEASE(m_pModelList)
     SAFE_RELEASE(m_pBitmap)
-    SAFE_RELEASE(m_pLightMapShader)
+    SAFE_RELEASE(m_pAlphaMapShader)
     SAFE_RELEASE(m_pLightShader)
     SAFE_RELEASE(m_pLight)
     SAFE_RELEASE(m_pCamera)
@@ -116,7 +116,7 @@ bool Graphics::Render(DXSound* pSound, int fps, int cpuUsage)
 
     m_pModel->Bind(*m_pD3D);
 
-    m_pLightMapShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, m_pModel->GetTextureArray());
+    m_pAlphaMapShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, m_pModel->GetTextureArray());
 
 #pragma region 2D Rendering
     //// 2D ∑ª¥ı∏µ¿ª ¿ß«ÿ ±Ì¿Ã πˆ∆€∏¶ ≤®¡‹.
