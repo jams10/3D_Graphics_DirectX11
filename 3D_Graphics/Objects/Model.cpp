@@ -27,13 +27,15 @@ Model::~Model()
 }
 
 void Model::Initialize(D3DGraphics& gfx, std::string modelFilePath, 
-                       std::string textureFilePath1, std::string textureFilePath2, std::string textureFilePath3)
+                       std::string textureFilePath1, std::string textureFilePath2)
 {
     LoadModel(modelFilePath);
 
+    CalculateModelVectors();
+
     InitializeBuffers(gfx);
 
-    LoadTextures(gfx, textureFilePath1, textureFilePath2, textureFilePath3);
+    LoadTextures(gfx, textureFilePath1, textureFilePath2);
 }
 
 void Model::Bind(D3DGraphics& gfx)
@@ -113,10 +115,10 @@ void Model::BindBuffers(D3DGraphics& gfx)
     return;
 }
 
-void Model::LoadTextures(D3DGraphics& gfx, std::string filePath1, std::string filePath2, std::string filePath3)
+void Model::LoadTextures(D3DGraphics& gfx, std::string filePath1, std::string filePath2)
 {
     m_pTextureArray = new TextureArray();
-    m_pTextureArray->Initialize(gfx, filePath1, filePath2, filePath3);
+    m_pTextureArray->Initialize(gfx, filePath1, filePath2);
     ALLOCATE_EXCEPT(m_pTextureArray, "Can't allocate a texture instance!")
 }
 
@@ -389,4 +391,159 @@ void Model::LoadObjFile(std::string filePath)
     }
 }
 
+void Model::CalculateModelVectors()
+{
+    int faceCount, i, index;
+    TempVertexType vertex1, vertex2, vertex3;
+    VectorType tangent, binormal, normal;
 
+    // 삼각형을 구성하는 정점의 개수는 3개. 따라서 총 정점의 개수를 3으로 나눈 것이 표면의 개수.
+    faceCount = m_vertexCount / 3;
+
+    index = 0;
+
+    // 모든 표면을 순회하면서 해당 표면의 tangent, binormal, normal 벡터들을 계산해줌.
+    for (i = 0; i < faceCount; i++)
+    {
+        vertex1.x = m_pModel[index].x;
+        vertex1.y = m_pModel[index].y;
+        vertex1.z = m_pModel[index].z;
+        vertex1.tu = m_pModel[index].tu;
+        vertex1.tv = m_pModel[index].tv;
+        vertex1.nx = m_pModel[index].nx;
+        vertex1.ny = m_pModel[index].ny;
+        vertex1.nz = m_pModel[index].nz;
+        index++;
+
+        vertex2.x = m_pModel[index].x;
+        vertex2.y = m_pModel[index].y;
+        vertex2.z = m_pModel[index].z;
+        vertex2.tu = m_pModel[index].tu;
+        vertex2.tv = m_pModel[index].tv;
+        vertex2.nx = m_pModel[index].nx;
+        vertex2.ny = m_pModel[index].ny;
+        vertex2.nz = m_pModel[index].nz;
+        index++;
+
+        vertex3.x = m_pModel[index].x;
+        vertex3.y = m_pModel[index].y;
+        vertex3.z = m_pModel[index].z;
+        vertex3.tu = m_pModel[index].tu;
+        vertex3.tv = m_pModel[index].tv;
+        vertex3.nx = m_pModel[index].nx;
+        vertex3.ny = m_pModel[index].ny;
+        vertex3.nz = m_pModel[index].nz;
+        index++;
+
+        // 해당 표면의 tangent와 binormal 값을 계산.
+        CalculateTangentBinormal(vertex1, vertex2, vertex3, tangent, binormal);
+
+        // 위에서 계산한 tangent, binormal 값을 통해 새 normal 값을 계산.
+        CalculateNormal(tangent, binormal, normal);
+
+        // 계산한 normal, tangent, binormal 값을 저장해줌.
+        m_pModel[index - 1].nx = normal.x;
+        m_pModel[index - 1].ny = normal.y;
+        m_pModel[index - 1].nz = normal.z;
+        m_pModel[index - 1].tx = tangent.x;
+        m_pModel[index - 1].ty = tangent.y;
+        m_pModel[index - 1].tz = tangent.z;
+        m_pModel[index - 1].bx = binormal.x;
+        m_pModel[index - 1].by = binormal.y;
+        m_pModel[index - 1].bz = binormal.z;
+
+        m_pModel[index - 2].nx = normal.x;
+        m_pModel[index - 2].ny = normal.y;
+        m_pModel[index - 2].nz = normal.z;
+        m_pModel[index - 2].tx = tangent.x;
+        m_pModel[index - 2].ty = tangent.y;
+        m_pModel[index - 2].tz = tangent.z;
+        m_pModel[index - 2].bx = binormal.x;
+        m_pModel[index - 2].by = binormal.y;
+        m_pModel[index - 2].bz = binormal.z;
+
+        m_pModel[index - 3].nx = normal.x;
+        m_pModel[index - 3].ny = normal.y;
+        m_pModel[index - 3].nz = normal.z;
+        m_pModel[index - 3].tx = tangent.x;
+        m_pModel[index - 3].ty = tangent.y;
+        m_pModel[index - 3].tz = tangent.z;
+        m_pModel[index - 3].bx = binormal.x;
+        m_pModel[index - 3].by = binormal.y;
+        m_pModel[index - 3].bz = binormal.z;
+    }
+
+    return;
+}
+
+void Model::CalculateTangentBinormal(TempVertexType vertex1, TempVertexType vertex2, TempVertexType vertex3, VectorType& tangent, VectorType& binormal)
+{
+    float vector1[3], vector2[3];
+    float tuVector[2], tvVector[2];
+    float den;
+    float length;
+
+    // 정점 vertex1에서 vertex2로 가는 벡터를 계산.
+    vector1[0] = vertex2.x - vertex1.x;
+    vector1[1] = vertex2.y - vertex1.y;
+    vector1[2] = vertex2.z - vertex1.z;
+    // 정점 vertex1에서 vertex3로 가는 벡터를 계산.
+    vector2[0] = vertex3.x - vertex1.x;
+    vector2[1] = vertex3.y - vertex1.y;
+    vector2[2] = vertex3.z - vertex1.z;
+
+    // 텍스쳐 공간의 벡터들을 계산해줌.
+    tuVector[0] = vertex2.tu - vertex1.tu;
+    tvVector[0] = vertex2.tv - vertex1.tv;
+
+    tuVector[1] = vertex3.tu - vertex1.tu;
+    tvVector[1] = vertex3.tv - vertex1.tv;
+
+    // 행렬로 유도할 수 있는 방정식을 통해 tangent 벡터와 binormal 벡터를 계산해줌.
+    den = 1.0f / (tuVector[0] * tvVector[1] - tuVector[1] * tvVector[0]);
+    tangent.x = (tvVector[1] * vector1[0] - tvVector[0] * vector2[0]) * den;
+    tangent.y = (tvVector[1] * vector1[1] - tvVector[0] * vector2[1]) * den;
+    tangent.z = (tvVector[1] * vector1[2] - tvVector[0] * vector2[2]) * den;
+
+    binormal.x = (tuVector[0] * vector2[0] - tuVector[1] * vector1[0]) * den;
+    binormal.y = (tuVector[0] * vector2[1] - tuVector[1] * vector1[1]) * den;
+    binormal.z = (tuVector[0] * vector2[2] - tuVector[1] * vector1[2]) * den;
+
+    // tangent 벡터 길이 계산.
+    length = sqrt((tangent.x * tangent.x) + (tangent.y * tangent.y) + (tangent.z * tangent.z));
+
+    // 정규화.
+    tangent.x = tangent.x / length;
+    tangent.y = tangent.y / length;
+    tangent.z = tangent.z / length;
+
+    // binormal 벡터 길이 계산.
+    length = sqrt((binormal.x * binormal.x) + (binormal.y * binormal.y) + (binormal.z * binormal.z));
+
+    // 정규화.
+    binormal.x = binormal.x / length;
+    binormal.y = binormal.y / length;
+    binormal.z = binormal.z / length;
+
+    return;
+}
+
+void Model::CalculateNormal(VectorType tangent, VectorType binormal, VectorType& normal) 
+{
+    float length;
+
+    // tangent 벡터와 binormal 벡터의 외적을 통해 새 normal 값을 구해줌.
+    normal.x = (tangent.y * binormal.z) - (tangent.z * binormal.y);
+    normal.y = (tangent.z * binormal.x) - (tangent.x * binormal.z);
+    normal.z = (tangent.x * binormal.y) - (tangent.y * binormal.x);
+
+    // 노말 벡터의 길이를 계산.
+    length = sqrt((normal.x * normal.x) + (normal.y * normal.y) + (normal.z * normal.z));
+
+    // 정규화.
+    normal.x = normal.x / length;
+    normal.y = normal.y / length;
+    normal.z = normal.z / length;
+
+    return;
+}

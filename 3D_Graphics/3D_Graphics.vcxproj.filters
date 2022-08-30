@@ -135,6 +135,9 @@
     <ClCompile Include="Shaders\AlphaMapShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shaders\NormalMapShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App\App.h">
@@ -326,6 +329,9 @@
     <ClInclude Include="Shaders\AlphaMapShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shaders\NormalMapShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\SolidColorVS.hlsl" />
@@ -342,6 +348,8 @@
     <FxCompile Include="Shaders\LightMapPS.hlsl" />
     <FxCompile Include="Shaders\AlphaMapVS.hlsl" />
     <FxCompile Include="Shaders\AlphaMapPS.hlsl" />
+    <FxCompile Include="Shaders\BumpMapVS.hlsl" />
+    <FxCompile Include="Shaders\BumpMapPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dxtex\DirectXTex.inl">
@@ -356,5 +364,6 @@
     <None Include="dxerr\DXTrace.inl">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="Shaders\BumpMapVS.cso" />
   </ItemGroup>
 </Project>

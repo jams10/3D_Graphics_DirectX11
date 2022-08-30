@@ -7,12 +7,42 @@ class TextureArray;
 
 class Model
 {
+private:
+	struct VertexType
+	{
+		DirectX::XMFLOAT3 position;
+		DirectX::XMFLOAT2 texture;
+		DirectX::XMFLOAT3 normal;
+		DirectX::XMFLOAT3 tangent;
+		DirectX::XMFLOAT3 binormal;
+	};
+
+	struct ModelType
+	{
+		float x, y, z;
+		float tu, tv;
+		float nx, ny, nz;
+		float tx, ty, tz;
+		float bx, by, bz;
+	};
+
+	struct TempVertexType
+	{
+		float x, y, z;
+		float tu, tv;
+		float nx, ny, nz;
+	};
+
+	struct VectorType
+	{
+		float x, y, z;
+	};
 public:
 	Model();
 	~Model();
 
 	void Initialize(D3DGraphics& gfx, std::string modelFilePath, 
-		            std::string textureFilePath1, std::string textureFilePath2, std::string textureFilePath3);
+		            std::string textureFilePath1, std::string textureFilePath2);
 	void Bind(D3DGraphics& gfx);
 	unsigned int GetIndexCount() { return m_indexCount; }
 	ID3D11ShaderResourceView** GetTextureArray();
@@ -23,7 +53,7 @@ private:
 	void InitializeBuffers(D3DGraphics& gfx);
 	void BindBuffers(D3DGraphics& gfx);
 
-	void LoadTextures(D3DGraphics& gfx, std::string filePath1, std::string filePath2, std::string filePath3);
+	void LoadTextures(D3DGraphics& gfx, std::string filePath1, std::string filePath2);
 	void ReleaseTexture();
 
 	void LoadModel(std::string filePath);
@@ -34,20 +64,10 @@ private:
 
 	void Reset();
 
-private:
-	struct VertexType
-	{
-		DirectX::XMFLOAT3 position;
-		DirectX::XMFLOAT2 texture;
-		DirectX::XMFLOAT3 normal;
-	};
+	void CalculateModelVectors();
+	void CalculateTangentBinormal(TempVertexType v1, TempVertexType v2, TempVertexType v3, VectorType& tangent, VectorType& binormal);
+	void CalculateNormal(VectorType tangent, VectorType binormal, VectorType& normal);
 
-	struct ModelType
-	{
-		float x, y, z;
-		float tu, tv;
-		float nx, ny, nz;
-	};
 private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_pVertexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_pIndexBuffer;

@@ -12,7 +12,7 @@ class D2DGraphics;
 class Camera;
 class Model;
 class LightShader;
-class AlphaMapShader;
+class NormalMapShader;
 class Light;
 class Bitmap;
 class DXSound;
@@ -43,7 +43,7 @@ private:
 	Camera* m_pFixedCamera;
 	Model* m_pModel;
 	LightShader* m_pLightShader;
-	AlphaMapShader* m_pAlphaMapShader;
+	NormalMapShader* m_pNormalMapShader;
 	Light* m_pLight;
 	Bitmap* m_pBitmap;
 	Frustum* m_pFrustum;
