@@ -8,7 +8,7 @@ NormalMapShader::NormalMapShader()
 
 void NormalMapShader::Initialize(D3DGraphics& gfx)
 {
-	InitializeShaders(gfx, L"/Shaders/BumpMapVS.hlsl", L"/Shaders/BumpMapPS.cso");
+	InitializeShaders(gfx, L"Shaders/BumpMapVS.cso", L"Shaders/BumpMapPS.cso");
 }
 
 void NormalMapShader::Bind(D3DGraphics& gfx, int indexCount, XMMATRIX world, XMMATRIX view, XMMATRIX projection, XMFLOAT4 diffuse, XMFLOAT3 lightDir, ID3D11ShaderResourceView** textureArray)

@@ -35,7 +35,7 @@ float4 main(PixelInputType input) : SV_TARGET
     bumpMap = (bumpMap * 2.0f) - 1.0f;
     
     // 노말맵에 있는 값을 사용해 노말 값을 계산함.
-    bumpNormal = (bumpMap.x * input.tangent) + (bumpMap.y * input.binormal) + (bumpMap.z * input.normal);
+    bumpNormal = (bumpMap.x * input.tangent) + (-bumpMap.y * input.binormal) + (bumpMap.z * input.normal);
 	
     // 계산한 노말 값을 정규화.
     bumpNormal = normalize(bumpNormal);
