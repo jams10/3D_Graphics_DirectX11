@@ -138,6 +138,9 @@
     <ClCompile Include="Shaders\NormalMapShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shaders\SpecularMapShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App\App.h">
@@ -332,6 +335,9 @@
     <ClInclude Include="Shaders\NormalMapShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shaders\SpecularMapShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\SolidColorVS.hlsl" />
@@ -350,6 +356,8 @@
     <FxCompile Include="Shaders\AlphaMapPS.hlsl" />
     <FxCompile Include="Shaders\BumpMapVS.hlsl" />
     <FxCompile Include="Shaders\BumpMapPS.hlsl" />
+    <FxCompile Include="Shaders\SpecularMapVS.hlsl" />
+    <FxCompile Include="Shaders\SpecularMapPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dxtex\DirectXTex.inl">

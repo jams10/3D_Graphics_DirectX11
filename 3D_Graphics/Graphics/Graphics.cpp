@@ -3,7 +3,7 @@
 #include <Graphics/D2DGraphics.h>
 #include <Shaders/TextureShader.h>
 #include <Shaders/LightShader.h>
-#include <Shaders/NormalMapShader.h>
+#include <Shaders/SpecularMapShader.h>
 #include <ErrorHandle/DxgiInfoManager.h>
 #include <ErrorHandle/CustomException.h>
 #include <ErrorHandle/D3DGraphicsExceptionMacros.h>
@@ -28,7 +28,7 @@ Graphics::Graphics()
     m_pCamera = nullptr;
     m_pModel = nullptr;
     m_pLightShader = nullptr;
-    m_pNormalMapShader = nullptr;
+    m_pSpecularMapShader = nullptr;
     m_pBitmap = nullptr;
     m_pFrustum = nullptr;
     m_pModelList = nullptr;
@@ -47,7 +47,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pD2D->Initialize(*m_pD3D);
 
     m_pModel = new Model();
-    m_pModel->Initialize(*m_pD3D, "Resources\\Models\\Cube.model", "Resources\\Images\\stone01.png", "Resources\\Images\\bump01.png");
+    m_pModel->Initialize(*m_pD3D, "Resources\\Models\\Cube.model", "Resources\\Images\\stone02.png", "Resources\\Images\\bump03.png", "Resources\\Images\\spec02.png");
 
     m_pCamera = new Camera();
     m_pFixedCamera = new Camera();
@@ -57,8 +57,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pLightShader = new LightShader();
     m_pLightShader->Initialize(*m_pD3D);
 
-    m_pNormalMapShader = new NormalMapShader();
-    m_pNormalMapShader->Initialize(*m_pD3D);
+    m_pSpecularMapShader = new SpecularMapShader();
+    m_pSpecularMapShader->Initialize(*m_pD3D);
 
     m_pBitmap = new Bitmap();
     m_pBitmap->Initialize(*m_pD3D, screenWidth, screenHeight, "Resources\\Images\\seafloor.png", 256, 256);
@@ -76,7 +76,7 @@ void Graphics::Shutdown()
     SAFE_RELEASE(m_pFrustum)
     SAFE_RELEASE(m_pModelList)
     SAFE_RELEASE(m_pBitmap)
-    SAFE_RELEASE(m_pNormalMapShader)
+    SAFE_RELEASE(m_pSpecularMapShader)
     SAFE_RELEASE(m_pLightShader)
     SAFE_RELEASE(m_pLight)
     SAFE_RELEASE(m_pCamera)
@@ -116,27 +116,18 @@ bool Graphics::Render(DXSound* pSound, int fps, int cpuUsage)
 
     m_pModel->Bind(*m_pD3D);
 
-    m_pNormalMapShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, m_pLight->GetDiffuseColor(), m_pLight->GetLightDirection(), m_pModel->GetTextureArray());
+    m_pSpecularMapShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, 
+        m_pLight->GetDiffuseColor(), m_pLight->GetLightDirection(), m_pCamera->GetPosition(), 
+        m_pLight->GetAmbientColor(), m_pLight->GetSpecularColor(), m_pLight->GetSpecularPower(),m_pModel->GetTextureArray());
 
-#pragma region 2D Rendering
-    //// 2D 렌더링을 위해 깊이 버퍼를 꺼줌.
-    //m_pD3D->TurnZBufferOff();
-
-    //// 2D 이미지 렌더링을 위한 bitmap 객체가 가진 정점과 인덱스 버퍼를 파이프라인에 바인딩.
-    //m_pBitmap->Bind(*m_pD3D, (1280 / 2) * -1 + (256 / 2), 720 / 2 - (256/ 2));
-
-    //// 2D 이미지는 texture shader로 그려줌.
-    //m_pTextureShader->Bind(*m_pD3D, m_pBitmap->GetIndexCount(), worldFor2D, viewFor2D, orth, m_pBitmap->GetTexture());
-
-    //m_pD3D->TurnZBufferOn();
-#pragma endregion
-
+    
 #pragma region UI
     m_pModel->SpawnControlWindow();
     m_pCamera->SpawnControlWindow();
     m_pLight->SpawnControlWindow();
     pSound->SpawnControlWindow();
 #pragma endregion
+
 
     m_pD2D->EndFrame();
     // 렌더링된 씬을 화면에 표시.

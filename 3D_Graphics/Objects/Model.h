@@ -42,7 +42,7 @@ public:
 	~Model();
 
 	void Initialize(D3DGraphics& gfx, std::string modelFilePath, 
-		            std::string textureFilePath1, std::string textureFilePath2);
+		            std::string textureFilePath1, std::string textureFilePath2, std::string textureFilePath3);
 	void Bind(D3DGraphics& gfx);
 	unsigned int GetIndexCount() { return m_indexCount; }
 	ID3D11ShaderResourceView** GetTextureArray();
@@ -53,7 +53,7 @@ private:
 	void InitializeBuffers(D3DGraphics& gfx);
 	void BindBuffers(D3DGraphics& gfx);
 
-	void LoadTextures(D3DGraphics& gfx, std::string filePath1, std::string filePath2);
+	void LoadTextures(D3DGraphics& gfx, std::string filePath1, std::string filePath2, std::string filePath3);
 	void ReleaseTexture();
 
 	void LoadModel(std::string filePath);

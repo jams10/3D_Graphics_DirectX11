@@ -6,12 +6,14 @@ TextureArray::TextureArray()
 {
     m_pTextures[0] = nullptr;
     m_pTextures[1] = nullptr;
+    m_pTextures[2] = nullptr;
 }
 
-void TextureArray::Initialize(D3DGraphics& gfx, const std::string& file1, const std::string& file2)
+void TextureArray::Initialize(D3DGraphics& gfx, const std::string& file1, const std::string& file2, const std::string& file3)
 {
 	MakeTextureView(gfx, file1, &m_pTextures[0]);
 	MakeTextureView(gfx, file2, &m_pTextures[1]);
+	MakeTextureView(gfx, file2, &m_pTextures[2]);
 }
 
 void TextureArray::MakeTextureView(D3DGraphics& gfx, const std::string& file, ID3D11ShaderResourceView** pTextureView)
