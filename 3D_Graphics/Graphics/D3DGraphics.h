@@ -74,9 +74,12 @@ public:
 	ID3D11Device* GetDevice() const { return m_pDevice.Get(); }
 	ID3D11DeviceContext* GetContext() const { return m_pContext.Get(); }
 	IDXGISwapChain* GetSwapChain() const { return m_pSwap.Get(); }
+	ID3D11DepthStencilView* GetDepthStencilView() const { return m_pDSV.Get(); }
 	DxgiInfoManager& GetInfoManager() { return infoManager; }
 	UINT GetDPI() const { return wndDpi; }
-	
+
+	void SetBackBufferRenderTarget();
+
 	dx::XMMATRIX GetProjectionMatrix() { return m_projectionMatrix; }
 	dx::XMMATRIX GetWorldMatrix() { return m_worldMatrix; }
 	dx::XMMATRIX GetOrthMatrix() { return m_orthoMatrix; }

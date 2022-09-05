@@ -12,7 +12,9 @@ class D2DGraphics;
 class Camera;
 class Model;
 class LightShader;
-class SpecularMapShader;
+class TextureShader;
+class DebugWindow;
+class RenderToTexture;
 class Light;
 class Bitmap;
 class DXSound;
@@ -35,6 +37,8 @@ public:
 
 private:
 	bool Render(DXSound* pSound, int fps, int cpuUsage);
+	void RenderToTextureFunc();
+	void RenderScene();
 
 private:
 	D3DGraphics* m_pD3D;
@@ -43,7 +47,9 @@ private:
 	Camera* m_pFixedCamera;
 	Model* m_pModel;
 	LightShader* m_pLightShader;
-	SpecularMapShader* m_pSpecularMapShader;
+	TextureShader* m_pTextureShader;
+	DebugWindow* m_pDebugWindow;
+	RenderToTexture* m_pRenderToTexture;
 	Light* m_pLight;
 	Bitmap* m_pBitmap;
 	Frustum* m_pFrustum;

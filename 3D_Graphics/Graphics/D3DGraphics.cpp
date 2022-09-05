@@ -213,6 +213,11 @@ void D3DGraphics::EndFrame()
 	}
 }
 
+void D3DGraphics::SetBackBufferRenderTarget()
+{
+	m_pContext->OMSetRenderTargets(1, m_pTarget.GetAddressOf(), m_pDSV.Get());
+}
+
 void D3DGraphics::TurnZBufferOn()
 {
 	m_pContext->OMSetDepthStencilState(m_pDepthStencilState.Get(), 1);
