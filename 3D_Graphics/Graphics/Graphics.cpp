@@ -5,6 +5,7 @@
 #include <Graphics/RenderToTexture.h>
 #include <Shaders/TextureShader.h>
 #include <Shaders/LightShader.h>
+#include <Shaders/FogShader.h>
 #include <ErrorHandle/DxgiInfoManager.h>
 #include <ErrorHandle/CustomException.h>
 #include <ErrorHandle/D3DGraphicsExceptionMacros.h>
@@ -30,6 +31,7 @@ Graphics::Graphics()
     m_pModel = nullptr;
     m_pLightShader = nullptr;
     m_pTextureShader = nullptr;
+    m_pFogShader = nullptr;
     m_pBitmap = nullptr;
     m_pFrustum = nullptr;
     m_pModelList = nullptr;
@@ -61,6 +63,9 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pTextureShader = new TextureShader();
     m_pTextureShader->Initialize(*m_pD3D);
 
+    m_pFogShader = new FogShader();
+    m_pFogShader->Initialize(*m_pD3D);
+
     m_pBitmap = new Bitmap();
     m_pBitmap->Initialize(*m_pD3D, screenWidth, screenHeight, "Resources\\Images\\seafloor.png", 256, 256);
 
@@ -85,6 +90,7 @@ void Graphics::Shutdown()
     SAFE_RELEASE(m_pDebugWindow)
     SAFE_RELEASE(m_pRenderToTexture)
     SAFE_RELEASE(m_pBitmap)
+    SAFE_RELEASE(m_pFogShader)
     SAFE_RELEASE(m_pTextureShader)
     SAFE_RELEASE(m_pLightShader)
     SAFE_RELEASE(m_pLight)
@@ -106,31 +112,17 @@ bool Graphics::Frame(DXSound* pSound, int fps, int cpuUsage)
 
 bool Graphics::Render(DXSound* pSound, int fps, int cpuUsage)
 {
-    RenderToTextureFunc();
+    float fogColor = 0.5f, fogStart = 0.0f, fogEnd = 10.f;
 
-    m_pD3D->BeginFrame(0.5f, 0.5f, 0.5f, 1.f);
-    m_pD2D->BeginFrame();
-    
-    // FPS, CPU 사용량 표시.
-    std::wstringstream wss_perf;
-    wss_perf << L"FPS : " << fps << L"\nCPU : " << cpuUsage << L"%";
-    m_pD2D->DrawBox(1280 - 100, 0, 1280, 100);
-    m_pD2D->WriteText(wss_perf.str(), 1280 - 100, 0, 1280, 100);
+    m_pD3D->BeginFrame(fogColor, fogColor, fogColor, 1.0f);
 
-    RenderScene();
+    dx::XMMATRIX world = m_pModel->GetWorldMatrix();
+    dx::XMMATRIX view = m_pCamera->GetViewMatrix();
+    dx::XMMATRIX projection = m_pD3D->GetProjectionMatrix();
 
-    m_pD3D->TurnZBufferOff();
+    m_pModel->Bind(*m_pD3D);
+    m_pFogShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, (m_pModel->GetTextureArray())[0], fogStart, fogEnd);
 
-    // 월드, 뷰, 원근 투영, 정사영 투영 행렬을 얻어옴.
-    dx::XMMATRIX worldFor2D = dx::XMMatrixIdentity();
-    dx::XMMATRIX viewFor2D = m_pFixedCamera->GetViewMatrix();
-    dx::XMMATRIX orth = m_pD3D->GetOrthMatrix();
-
-    m_pDebugWindow->Render(*m_pD3D, 50, 50);
-
-    m_pTextureShader->Bind(*m_pD3D, m_pDebugWindow->GetIndexCount(), worldFor2D, viewFor2D, orth, m_pRenderToTexture->GetShaderResourceView());
-    
-    m_pD3D->TurnZBufferOn();
 #pragma region UI
     m_pModel->SpawnControlWindow();
     m_pCamera->SpawnControlWindow();
@@ -138,8 +130,6 @@ bool Graphics::Render(DXSound* pSound, int fps, int cpuUsage)
     pSound->SpawnControlWindow();
 #pragma endregion
 
-    m_pD2D->EndFrame();
-    // 렌더링된 씬을 화면에 표시.
     m_pD3D->EndFrame();
 
     return true;
@@ -147,31 +137,9 @@ bool Graphics::Render(DXSound* pSound, int fps, int cpuUsage)
 
 void Graphics::RenderToTextureFunc()
 {
-    bool result;
-
-    // 렌더 타겟을 텍스쳐로 설정.
-    m_pRenderToTexture->SetRenderTarget(*m_pD3D);
-
-    // 백 버퍼 초기화.
-    m_pRenderToTexture->ClearRenderTarget(*m_pD3D, 0.0f, 0.0f, 1.0f, 1.0f);
-
-    // 벡 버퍼가 아닌 텍스쳐에 씬을 그려줌.
-    RenderScene();
-
-    // 렌더 타겟을 다시 텍스쳐에서 백 버퍼로 되돌려줌.
-    m_pD3D->SetBackBufferRenderTarget();
+  
 }
 
 void Graphics::RenderScene()
 {
-    // 월드, 뷰, 원근 투영, 정사영 투영 행렬을 얻어옴.
-    dx::XMMATRIX world = m_pModel->GetWorldMatrix();
-    dx::XMMATRIX view = m_pCamera->GetViewMatrix();
-    dx::XMMATRIX projection = m_pD3D->GetProjectionMatrix();
-
-    m_pModel->Bind(*m_pD3D);
-
-    m_pLightShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, m_pCamera->GetPosition(),
-        (m_pModel->GetTextureArray())[0], m_pLight->GetAmbientColor(), m_pLight->GetDiffuseColor(), m_pLight->GetLightDirection(),
-        m_pLight->GetSpecularColor(), m_pLight->GetSpecularPower());
 }

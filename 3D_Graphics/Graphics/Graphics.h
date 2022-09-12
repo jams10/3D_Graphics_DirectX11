@@ -13,6 +13,7 @@ class Camera;
 class Model;
 class LightShader;
 class TextureShader;
+class FogShader;
 class DebugWindow;
 class RenderToTexture;
 class Light;
@@ -48,6 +49,7 @@ private:
 	Model* m_pModel;
 	LightShader* m_pLightShader;
 	TextureShader* m_pTextureShader;
+	FogShader* m_pFogShader;
 	DebugWindow* m_pDebugWindow;
 	RenderToTexture* m_pRenderToTexture;
 	Light* m_pLight;

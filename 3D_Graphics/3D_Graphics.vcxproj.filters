@@ -147,6 +147,9 @@
     <ClCompile Include="Graphics\DebugWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shaders\FogShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App\App.h">
@@ -350,6 +353,9 @@
     <ClInclude Include="Graphics\DebugWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shaders\FogShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\SolidColorVS.hlsl" />
@@ -370,6 +376,8 @@
     <FxCompile Include="Shaders\SpecularMapPS.hlsl" />
     <FxCompile Include="Shaders\TextureVS.hlsl" />
     <FxCompile Include="Shaders\TexturePS.hlsl" />
+    <FxCompile Include="Shaders\FogVS.hlsl" />
+    <FxCompile Include="Shaders\FogPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dxtex\DirectXTex.inl">
