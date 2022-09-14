@@ -5,7 +5,7 @@
 #include <Graphics/RenderToTexture.h>
 #include <Shaders/TextureShader.h>
 #include <Shaders/LightShader.h>
-#include <Shaders/FogShader.h>
+#include <Shaders/ClipPlaneShader.h>
 #include <ErrorHandle/DxgiInfoManager.h>
 #include <ErrorHandle/CustomException.h>
 #include <ErrorHandle/D3DGraphicsExceptionMacros.h>
@@ -31,7 +31,7 @@ Graphics::Graphics()
     m_pModel = nullptr;
     m_pLightShader = nullptr;
     m_pTextureShader = nullptr;
-    m_pFogShader = nullptr;
+    m_pClipPlaneShader = nullptr;
     m_pBitmap = nullptr;
     m_pFrustum = nullptr;
     m_pModelList = nullptr;
@@ -63,8 +63,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pTextureShader = new TextureShader();
     m_pTextureShader->Initialize(*m_pD3D);
 
-    m_pFogShader = new FogShader();
-    m_pFogShader->Initialize(*m_pD3D);
+    m_pClipPlaneShader = new ClipPlaneShader();
+    m_pClipPlaneShader->Initialize(*m_pD3D);
 
     m_pBitmap = new Bitmap();
     m_pBitmap->Initialize(*m_pD3D, screenWidth, screenHeight, "Resources\\Images\\seafloor.png", 256, 256);
@@ -90,7 +90,7 @@ void Graphics::Shutdown()
     SAFE_RELEASE(m_pDebugWindow)
     SAFE_RELEASE(m_pRenderToTexture)
     SAFE_RELEASE(m_pBitmap)
-    SAFE_RELEASE(m_pFogShader)
+    SAFE_RELEASE(m_pClipPlaneShader)
     SAFE_RELEASE(m_pTextureShader)
     SAFE_RELEASE(m_pLightShader)
     SAFE_RELEASE(m_pLight)
@@ -112,16 +112,17 @@ bool Graphics::Frame(DXSound* pSound, int fps, int cpuUsage)
 
 bool Graphics::Render(DXSound* pSound, int fps, int cpuUsage)
 {
-    float fogColor = 0.5f, fogStart = 0.0f, fogEnd = 10.f;
+    XMFLOAT3 clipNormal(0.0f, 0.0f, -1.0f);
+    XMFLOAT4 clipPlane(clipNormal.x, clipNormal.y, clipNormal.z, 0.f);
 
-    m_pD3D->BeginFrame(fogColor, fogColor, fogColor, 1.0f);
+    m_pD3D->BeginFrame(0.3f, 0.3f, 0.3f, 1.0f);
 
     dx::XMMATRIX world = m_pModel->GetWorldMatrix();
     dx::XMMATRIX view = m_pCamera->GetViewMatrix();
     dx::XMMATRIX projection = m_pD3D->GetProjectionMatrix();
 
     m_pModel->Bind(*m_pD3D);
-    m_pFogShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, (m_pModel->GetTextureArray())[0], fogStart, fogEnd);
+    m_pClipPlaneShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, (m_pModel->GetTextureArray())[0], clipPlane);
 
 #pragma region UI
     m_pModel->SpawnControlWindow();

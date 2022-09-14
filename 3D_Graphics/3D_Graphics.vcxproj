@@ -158,6 +158,7 @@
     <ClCompile Include="Objects\Light.cpp" />
     <ClCompile Include="Objects\ModelList.cpp" />
     <ClCompile Include="Shaders\AlphaMapShader.cpp" />
+    <ClCompile Include="Shaders\ClipPlaneShader.cpp" />
     <ClCompile Include="Shaders\FogShader.cpp" />
     <ClCompile Include="Shaders\LightMapShader.cpp" />
     <ClCompile Include="Shaders\LightShader.cpp" />
@@ -224,6 +225,7 @@
     <ClInclude Include="Objects\Light.h" />
     <ClInclude Include="Objects\ModelList.h" />
     <ClInclude Include="Shaders\AlphaMapShader.h" />
+    <ClInclude Include="Shaders\ClipPlaneShader.h" />
     <ClInclude Include="Shaders\FogShader.h" />
     <ClInclude Include="Shaders\LightMapShader.h" />
     <ClInclude Include="Shaders\LightShader.h" />
@@ -291,6 +293,22 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\Shaders\%(Filename).cso</ObjectFileOutput>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\ClipPlanePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\Shaders\%(Filename).cso</ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\ClipPlaneVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\Shaders\%(Filename).cso</ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Shaders\DiffuseLightingPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
