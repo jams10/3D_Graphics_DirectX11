@@ -5,7 +5,7 @@
 #include <Graphics/RenderToTexture.h>
 #include <Shaders/TextureShader.h>
 #include <Shaders/LightShader.h>
-#include <Shaders/ClipPlaneShader.h>
+#include <Shaders/TranslateShader.h>
 #include <ErrorHandle/DxgiInfoManager.h>
 #include <ErrorHandle/CustomException.h>
 #include <ErrorHandle/D3DGraphicsExceptionMacros.h>
@@ -25,13 +25,18 @@
 
 Graphics::Graphics()
 {
+    accumulatedTime = 0.f;
+    translationX = 0.f;
+    translationY = 0.f;
+    bSineX = false;
+    bSineY = false;
     m_pD3D = nullptr;
     m_pD2D = nullptr;
     m_pCamera = nullptr;
     m_pModel = nullptr;
     m_pLightShader = nullptr;
     m_pTextureShader = nullptr;
-    m_pClipPlaneShader = nullptr;
+    m_pTranslateShader = nullptr;
     m_pBitmap = nullptr;
     m_pFrustum = nullptr;
     m_pModelList = nullptr;
@@ -50,7 +55,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pD2D->Initialize(*m_pD3D);
 
     m_pModel = new Model();
-    m_pModel->Initialize(*m_pD3D, "Resources\\Models\\Cube.model", "Resources\\Images\\stone02.png", "Resources\\Images\\bump03.png", "Resources\\Images\\spec02.png");
+    m_pModel->Initialize(*m_pD3D, "Resources\\Models\\Cube.model", "Resources\\Images\\Water.png", "Resources\\Images\\bump03.png", "Resources\\Images\\spec02.png");
 
     m_pCamera = new Camera();
     m_pFixedCamera = new Camera();
@@ -63,8 +68,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pTextureShader = new TextureShader();
     m_pTextureShader->Initialize(*m_pD3D);
 
-    m_pClipPlaneShader = new ClipPlaneShader();
-    m_pClipPlaneShader->Initialize(*m_pD3D);
+    m_pTranslateShader = new TranslateShader();
+    m_pTranslateShader->Initialize(*m_pD3D);
 
     m_pBitmap = new Bitmap();
     m_pBitmap->Initialize(*m_pD3D, screenWidth, screenHeight, "Resources\\Images\\seafloor.png", 256, 256);
@@ -90,7 +95,7 @@ void Graphics::Shutdown()
     SAFE_RELEASE(m_pDebugWindow)
     SAFE_RELEASE(m_pRenderToTexture)
     SAFE_RELEASE(m_pBitmap)
-    SAFE_RELEASE(m_pClipPlaneShader)
+    SAFE_RELEASE(m_pTranslateShader)
     SAFE_RELEASE(m_pTextureShader)
     SAFE_RELEASE(m_pLightShader)
     SAFE_RELEASE(m_pLight)
@@ -100,9 +105,9 @@ void Graphics::Shutdown()
     SAFE_RELEASE(m_pD3D)
 }
 
-bool Graphics::Frame(DXSound* pSound, int fps, int cpuUsage)
+bool Graphics::Frame(DXSound* pSound, int fps, int cpuUsage, float dt)
 {
-    if (!Render(pSound, fps, cpuUsage))
+    if (!Render(pSound, fps, cpuUsage, dt))
     {
         return false;
     }
@@ -110,7 +115,7 @@ bool Graphics::Frame(DXSound* pSound, int fps, int cpuUsage)
     return true;
 }
 
-bool Graphics::Render(DXSound* pSound, int fps, int cpuUsage)
+bool Graphics::Render(DXSound* pSound, int fps, int cpuUsage, float dt)
 {
     XMFLOAT3 clipNormal(0.0f, 0.0f, -1.0f);
     XMFLOAT4 clipPlane(clipNormal.x, clipNormal.y, clipNormal.z, 0.f);
@@ -121,8 +126,43 @@ bool Graphics::Render(DXSound* pSound, int fps, int cpuUsage)
     dx::XMMATRIX view = m_pCamera->GetViewMatrix();
     dx::XMMATRIX projection = m_pD3D->GetProjectionMatrix();
 
+
+    accumulatedTime += dt;
+
+#pragma region TranslationUI
+    if (ImGui::Begin("TranslateTexture"))
+    {
+        ImGui::Text("Translate");
+        ImGui::SliderFloat("X", &translationX, 0.f, 1.0f, "%.1f");
+        ImGui::SliderFloat("Y", &translationY, 0.f, 1.0f, "%.1f");
+        if (ImGui::Button("Reset"))
+        {
+            translationX = 0.f;
+            translationY = 0.f;
+        }
+        if (ImGui::Button("SineX"))
+        {
+            bSineX = true;
+        }
+        if (ImGui::Button("SineY"))
+        {
+            bSineY = true;
+        }
+        if (ImGui::Button("Stop"))
+        {
+            bSineX = false;
+            bSineY = false;
+        }
+    }
+    ImGui::End();
+
+    if (bSineX) translationX = sinf(accumulatedTime);
+    if (bSineY) translationY = sinf(accumulatedTime);
+#pragma endregion
+
     m_pModel->Bind(*m_pD3D);
-    m_pClipPlaneShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, (m_pModel->GetTextureArray())[0], clipPlane);
+    m_pTranslateShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, 
+        (m_pModel->GetTextureArray())[0], translationX, translationY);
 
 #pragma region UI
     m_pModel->SpawnControlWindow();

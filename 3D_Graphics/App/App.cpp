@@ -135,5 +135,5 @@ void Application::Frame()
 	}
 #pragma endregion
 
-	m_pGfx->Frame(m_pSound, fpsCounter.GetFps(), cpuCounter.GetCpuPercentage());
+	m_pGfx->Frame(m_pSound, fpsCounter.GetFps(), cpuCounter.GetCpuPercentage(), dt);
 }

@@ -153,6 +153,9 @@
     <ClCompile Include="Shaders\ClipPlaneShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shaders\TranslateShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App\App.h">
@@ -362,6 +365,9 @@
     <ClInclude Include="Shaders\ClipPlaneShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shaders\TranslateShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\SolidColorVS.hlsl" />
@@ -386,6 +392,8 @@
     <FxCompile Include="Shaders\FogPS.hlsl" />
     <FxCompile Include="Shaders\ClipPlaneVS.hlsl" />
     <FxCompile Include="Shaders\ClipPlanePS.hlsl" />
+    <FxCompile Include="Shaders\TranslateVS.hlsl" />
+    <FxCompile Include="Shaders\TranslatePS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dxtex\DirectXTex.inl">
