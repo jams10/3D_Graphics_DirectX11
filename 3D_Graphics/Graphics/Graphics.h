@@ -13,7 +13,7 @@ class Camera;
 class Model;
 class LightShader;
 class TextureShader;
-class TranslateShader;
+class TransparentShader;
 class DebugWindow;
 class RenderToTexture;
 class Light;
@@ -43,20 +43,18 @@ private:
 	
 private:
 	float accumulatedTime;
-	float translationX;
-	float translationY;
-	bool bSineX;
-	bool bSineY;
+	float blendAmount;
 
 private:
 	D3DGraphics* m_pD3D;
 	D2DGraphics* m_pD2D;
 	Camera* m_pCamera;
 	Camera* m_pFixedCamera;
-	Model* m_pModel;
+	Model* m_pModel1;
+	Model* m_pModel2;
 	LightShader* m_pLightShader;
 	TextureShader* m_pTextureShader;
-	TranslateShader* m_pTranslateShader;
+	TransparentShader* m_pTransparentShader;
 	DebugWindow* m_pDebugWindow;
 	RenderToTexture* m_pRenderToTexture;
 	Light* m_pLight;

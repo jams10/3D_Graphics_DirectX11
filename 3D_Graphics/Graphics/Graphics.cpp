@@ -5,7 +5,7 @@
 #include <Graphics/RenderToTexture.h>
 #include <Shaders/TextureShader.h>
 #include <Shaders/LightShader.h>
-#include <Shaders/TranslateShader.h>
+#include <Shaders/TransparentShader.h>
 #include <ErrorHandle/DxgiInfoManager.h>
 #include <ErrorHandle/CustomException.h>
 #include <ErrorHandle/D3DGraphicsExceptionMacros.h>
@@ -26,17 +26,15 @@
 Graphics::Graphics()
 {
     accumulatedTime = 0.f;
-    translationX = 0.f;
-    translationY = 0.f;
-    bSineX = false;
-    bSineY = false;
+    blendAmount = 0.5f;
     m_pD3D = nullptr;
     m_pD2D = nullptr;
     m_pCamera = nullptr;
-    m_pModel = nullptr;
+    m_pModel1 = nullptr;
+    m_pModel2 = nullptr;
     m_pLightShader = nullptr;
     m_pTextureShader = nullptr;
-    m_pTranslateShader = nullptr;
+    m_pTransparentShader = nullptr;
     m_pBitmap = nullptr;
     m_pFrustum = nullptr;
     m_pModelList = nullptr;
@@ -54,8 +52,11 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pD2D = new D2DGraphics(*m_pD3D);
     m_pD2D->Initialize(*m_pD3D);
 
-    m_pModel = new Model();
-    m_pModel->Initialize(*m_pD3D, "Resources\\Models\\Cube.model", "Resources\\Images\\Water.png", "Resources\\Images\\bump03.png", "Resources\\Images\\spec02.png");
+    m_pModel1 = new Model();
+    m_pModel1->Initialize(*m_pD3D, "Resources\\Models\\Cube.model", "Resources\\Images\\dirt01.png", "Resources\\Images\\bump03.png", "Resources\\Images\\spec02.png");
+    
+    m_pModel2 = new Model();
+    m_pModel2->Initialize(*m_pD3D, "Resources\\Models\\Cube.model", "Resources\\Images\\stone01.png", "Resources\\Images\\bump03.png", "Resources\\Images\\spec02.png");
 
     m_pCamera = new Camera();
     m_pFixedCamera = new Camera();
@@ -68,8 +69,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pTextureShader = new TextureShader();
     m_pTextureShader->Initialize(*m_pD3D);
 
-    m_pTranslateShader = new TranslateShader();
-    m_pTranslateShader->Initialize(*m_pD3D);
+    m_pTransparentShader = new TransparentShader();
+    m_pTransparentShader->Initialize(*m_pD3D);
 
     m_pBitmap = new Bitmap();
     m_pBitmap->Initialize(*m_pD3D, screenWidth, screenHeight, "Resources\\Images\\seafloor.png", 256, 256);
@@ -95,12 +96,13 @@ void Graphics::Shutdown()
     SAFE_RELEASE(m_pDebugWindow)
     SAFE_RELEASE(m_pRenderToTexture)
     SAFE_RELEASE(m_pBitmap)
-    SAFE_RELEASE(m_pTranslateShader)
+    SAFE_RELEASE(m_pTransparentShader)
     SAFE_RELEASE(m_pTextureShader)
     SAFE_RELEASE(m_pLightShader)
     SAFE_RELEASE(m_pLight)
     SAFE_RELEASE(m_pCamera)
-    SAFE_RELEASE(m_pModel)
+    SAFE_RELEASE(m_pModel2)
+    SAFE_RELEASE(m_pModel1)
     SAFE_RELEASE(m_pD2D)
     SAFE_RELEASE(m_pD3D)
 }
@@ -122,7 +124,8 @@ bool Graphics::Render(DXSound* pSound, int fps, int cpuUsage, float dt)
 
     m_pD3D->BeginFrame(0.3f, 0.3f, 0.3f, 1.0f);
 
-    dx::XMMATRIX world = m_pModel->GetWorldMatrix();
+    dx::XMMATRIX world1 = m_pModel1->GetWorldMatrix();
+    dx::XMMATRIX world2 = m_pModel2->GetWorldMatrix();
     dx::XMMATRIX view = m_pCamera->GetViewMatrix();
     dx::XMMATRIX projection = m_pD3D->GetProjectionMatrix();
 
@@ -130,42 +133,29 @@ bool Graphics::Render(DXSound* pSound, int fps, int cpuUsage, float dt)
     accumulatedTime += dt;
 
 #pragma region TranslationUI
-    if (ImGui::Begin("TranslateTexture"))
+    if (ImGui::Begin("TransParent"))
     {
-        ImGui::Text("Translate");
-        ImGui::SliderFloat("X", &translationX, 0.f, 1.0f, "%.1f");
-        ImGui::SliderFloat("Y", &translationY, 0.f, 1.0f, "%.1f");
+        ImGui::SliderFloat("BlendAmount", &blendAmount, 0.f, 1.0f, "%.1f");
         if (ImGui::Button("Reset"))
         {
-            translationX = 0.f;
-            translationY = 0.f;
-        }
-        if (ImGui::Button("SineX"))
-        {
-            bSineX = true;
-        }
-        if (ImGui::Button("SineY"))
-        {
-            bSineY = true;
-        }
-        if (ImGui::Button("Stop"))
-        {
-            bSineX = false;
-            bSineY = false;
+            blendAmount = 0.f;
         }
     }
     ImGui::End();
-
-    if (bSineX) translationX = sinf(accumulatedTime);
-    if (bSineY) translationY = sinf(accumulatedTime);
 #pragma endregion
 
-    m_pModel->Bind(*m_pD3D);
-    m_pTranslateShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, 
-        (m_pModel->GetTextureArray())[0], translationX, translationY);
+    m_pModel1->Bind(*m_pD3D);
+    m_pTextureShader->Bind(*m_pD3D, m_pModel1->GetIndexCount(), world1, view, projection, m_pModel1->GetTextureArray()[0]);
+    
+    m_pD3D->TurnOnAlphaBlending();
+
+    m_pModel2->Bind(*m_pD3D);
+    m_pTransparentShader->Bind(*m_pD3D, m_pModel2->GetIndexCount(), world2, view, projection, m_pModel2->GetTextureArray()[0], blendAmount);
+
+    m_pD3D->TurnOffAlphaBlending();
 
 #pragma region UI
-    m_pModel->SpawnControlWindow();
+    m_pModel1->SpawnControlWindow();
     m_pCamera->SpawnControlWindow();
     m_pLight->SpawnControlWindow();
     pSound->SpawnControlWindow();

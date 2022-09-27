@@ -90,6 +90,22 @@ bool D3DGraphics::Initialize(int screenWidth, int screenHeight, bool vsync, HWND
 	// 출력 병합기에 depth state 묶기.
 	m_pContext->OMSetDepthStencilState(m_pDepthStencilState.Get(), 1u);
 
+	// 알파 블렌딩을 위한 blend state 생성.
+	D3D11_BLEND_DESC blendStateDesc = {};
+	blendStateDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendStateDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	blendStateDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	blendStateDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blendStateDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blendStateDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	blendStateDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blendStateDesc.RenderTarget[0].RenderTargetWriteMask = 0x0f;
+
+	m_pDevice->CreateBlendState(&blendStateDesc, &m_pAlphaEnabledBlendingState);
+
+	// BlendEnable를 False로 설정해 알파 블렌딩을 끈 상태의 blend state를 생성함.
+	m_pDevice->CreateBlendState(&blendStateDesc, &m_pAlphaDisabledBlendingState);
+
 	// 깊이 스텐실용 텍스쳐 생성.
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> pDepthStencil;
 	D3D11_TEXTURE2D_DESC descDepth = {};
@@ -226,6 +242,38 @@ void D3DGraphics::TurnZBufferOn()
 void D3DGraphics::TurnZBufferOff()
 {
 	m_pContext->OMSetDepthStencilState(m_pDepthDisabledStencilState.Get(), 1);
+}
+
+void D3DGraphics::TurnOnAlphaBlending()
+{
+	float blendFactor[4];
+
+	// Setup the blend factor.
+	blendFactor[0] = 0.0f;
+	blendFactor[1] = 0.0f;
+	blendFactor[2] = 0.0f;
+	blendFactor[3] = 0.0f;
+
+	// Turn on the alpha blending.
+	m_pContext->OMSetBlendState(m_pAlphaEnabledBlendingState.Get(), blendFactor, 0xffffffff);
+
+	return;
+}
+
+void D3DGraphics::TurnOffAlphaBlending()
+{
+	float blendFactor[4];
+
+	// Setup the blend factor.
+	blendFactor[0] = 0.0f;
+	blendFactor[1] = 0.0f;
+	blendFactor[2] = 0.0f;
+	blendFactor[3] = 0.0f;
+
+	// Turn on the alpha blending.
+	m_pContext->OMSetBlendState(m_pAlphaDisabledBlendingState.Get(), blendFactor, 0xffffffff);
+
+	return;
 }
 
 #pragma region Exception
