@@ -25,6 +25,20 @@ DirectX::XMMATRIX Camera::GetViewMatrix() const noexcept
 	return DirectX::XMMatrixLookAtLH(camPosition, camTarget, DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 }
 
+DirectX::XMMATRIX Camera::GetReflectionMatrix(float height) const noexcept
+{
+	const DirectX::XMVECTOR forwardBaseVector = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+
+	const auto lookVector = DirectX::XMVector3Transform(forwardBaseVector,
+		DirectX::XMMatrixRotationRollPitchYaw(pitch, yaw, 0.0f)
+	);
+	DirectX::XMFLOAT3 invpos = pos;
+	invpos.y *= -1.f;
+	auto camPosition = DirectX::XMLoadFloat3(&invpos);
+	auto camTarget = DirectX::XMVectorAdd(camPosition, lookVector);
+	return DirectX::XMMatrixLookAtLH(camPosition, camTarget, DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+}
+
 DirectX::XMFLOAT3 Camera::GetPosition() const
 {
 	return pos;

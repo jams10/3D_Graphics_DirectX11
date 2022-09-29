@@ -9,6 +9,7 @@ class Camera
 public:
 	Camera() noexcept;
 	DirectX::XMMATRIX GetViewMatrix() const noexcept;
+	DirectX::XMMATRIX GetReflectionMatrix(float height) const noexcept;
 	DirectX::XMFLOAT3 GetPosition() const;
 	void SpawnControlWindow() noexcept;
 	void Reset() noexcept;

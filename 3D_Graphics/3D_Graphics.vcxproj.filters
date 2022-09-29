@@ -159,6 +159,9 @@
     <ClCompile Include="Shaders\TransparentShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shaders\ReflectionShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App\App.h">
@@ -374,6 +377,9 @@
     <ClInclude Include="Shaders\TransparentShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shaders\ReflectionShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\SolidColorVS.hlsl" />
@@ -402,6 +408,8 @@
     <FxCompile Include="Shaders\TranslatePS.hlsl" />
     <FxCompile Include="Shaders\TransparentVS.hlsl" />
     <FxCompile Include="Shaders\TransparentPS.hlsl" />
+    <FxCompile Include="Shaders\ReflectionVS.hlsl" />
+    <FxCompile Include="Shaders\ReflectionPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dxtex\DirectXTex.inl">

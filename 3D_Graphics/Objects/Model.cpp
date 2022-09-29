@@ -26,6 +26,13 @@ Model::~Model()
 {
 }
 
+void Model::SetPosition(float x, float y, float z)
+{
+    pos.x = x;
+    pos.y = y;
+    pos.z = z;
+}
+
 void Model::Initialize(D3DGraphics& gfx, std::string modelFilePath, 
                        std::string textureFilePath1, std::string textureFilePath2, std::string textureFilePath3)
 {

@@ -47,6 +47,7 @@ public:
 	unsigned int GetIndexCount() { return m_indexCount; }
 	ID3D11ShaderResourceView** GetTextureArray();
 	DirectX::XMMATRIX GetWorldMatrix() const noexcept;
+	void SetPosition(float x, float y, float z);
 	void SpawnControlWindow() noexcept;
 
 private:
