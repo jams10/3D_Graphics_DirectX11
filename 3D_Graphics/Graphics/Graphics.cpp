@@ -5,7 +5,7 @@
 #include <Graphics/RenderToTexture.h>
 #include <Shaders/TextureShader.h>
 #include <Shaders/LightShader.h>
-#include <Shaders/ReflectionShader.h>
+#include <Shaders/FadeShader.h>
 #include <ErrorHandle/DxgiInfoManager.h>
 #include <ErrorHandle/CustomException.h>
 #include <ErrorHandle/D3DGraphicsExceptionMacros.h>
@@ -21,7 +21,10 @@
 #include <stdexcept>
 #include <sstream>
 
+#include <iostream>
+
 #define SAFE_RELEASE(p) if(p){delete p; p=nullptr;}
+#define PI 3.141592
 
 Graphics::Graphics()
 {
@@ -35,7 +38,7 @@ Graphics::Graphics()
     m_pLightShader = nullptr;
     m_pRenderToTexture = nullptr;
     m_pTextureShader = nullptr;
-    m_pReflectionShader = nullptr;
+    m_pFadeShader = nullptr;
     m_pBitmap = nullptr;
     m_pFrustum = nullptr;
     m_pModelList = nullptr;
@@ -70,11 +73,11 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pTextureShader = new TextureShader();
     m_pTextureShader->Initialize(*m_pD3D);
 
-    m_pReflectionShader = new ReflectionShader();
-    m_pReflectionShader->Initialize(*m_pD3D);
+    m_pFadeShader = new FadeShader();
+    m_pFadeShader->Initialize(*m_pD3D);
 
     m_pBitmap = new Bitmap();
-    m_pBitmap->Initialize(*m_pD3D, screenWidth, screenHeight, "Resources\\Images\\seafloor.png", 256, 256);
+    m_pBitmap->Initialize(*m_pD3D, screenWidth, screenHeight, screenWidth, screenHeight);
 
     m_pRenderToTexture = new RenderToTexture();
     m_pRenderToTexture->Initialize(*m_pD3D, screenWidth, screenHeight);
@@ -87,6 +90,11 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
 
     m_pFrustum = new Frustum();
 
+    m_fadeInTime = 10.f;   // fade되는 시간을 10 초로 초기화.
+    m_accumulatedTime = 0; // 누적 시간을 0초로 초기화.
+    m_fadePercentage = 0;  // fade 퍼센티지를 0으로 만들어 씬을 완전히 검은색으로 만들어줌.
+    m_fadeDone = false;
+
     return true;
 }
 
@@ -97,7 +105,7 @@ void Graphics::Shutdown()
     SAFE_RELEASE(m_pDebugWindow)
     SAFE_RELEASE(m_pRenderToTexture)
     SAFE_RELEASE(m_pBitmap)
-    SAFE_RELEASE(m_pReflectionShader)
+    SAFE_RELEASE(m_pFadeShader)
     SAFE_RELEASE(m_pTextureShader)
     SAFE_RELEASE(m_pLightShader)
     SAFE_RELEASE(m_pLight)
@@ -110,6 +118,21 @@ void Graphics::Shutdown()
 
 bool Graphics::Frame(DXSound* pSound, int fps, int cpuUsage, float dt)
 {
+    if (!m_fadeDone)
+    {
+        m_accumulatedTime += dt;
+        std::cout << m_accumulatedTime << '\n';
+        if (m_accumulatedTime < m_fadeInTime)
+        {
+            m_fadePercentage = m_accumulatedTime / m_fadeInTime;
+        }
+        else
+        {
+            m_fadeDone = true;
+            m_fadePercentage = 1.0f;
+        }
+    }
+
     if (!Render(pSound, fps, cpuUsage, dt))
     {
         return false;
@@ -120,48 +143,74 @@ bool Graphics::Frame(DXSound* pSound, int fps, int cpuUsage, float dt)
 
 bool Graphics::Render(DXSound* pSound, int fps, int cpuUsage, float dt)
 {
-    RenderToTextureFunc();
-    RenderScene();
+    static float rotYaw = 0.f;
+    rotYaw += PI * 0.005f;
 
+    if (rotYaw > 360.0f)
+    {
+        rotYaw -= 360.0f;
+    }
+
+    if (m_fadeDone)
+    {
+        // fade 효과 시간이 끝나면 일반 씬을 그려줌.
+        RenderScene(rotYaw);
+    }
+    else
+    {
+        RenderToTextureFunc(rotYaw);
+        RenderFadingScene();
+    }
     return true;
 }
 
-void Graphics::RenderToTextureFunc()
+void Graphics::RenderToTextureFunc(float yaw)
 {
     dx::XMMATRIX world = m_pModelCube->GetWorldMatrix();
+    dx::XMMATRIX view = m_pCamera->GetViewMatrix();
     dx::XMMATRIX projection = m_pD3D->GetProjectionMatrix();
 
     // 렌더 타겟을 텍스쳐로 설정하고 초기화 해줌.
     m_pRenderToTexture->SetRenderTarget(*m_pD3D);
     m_pRenderToTexture->ClearRenderTarget(*m_pD3D, 0.0f, 0.0f, 0.0f, 1.0f);
 
-    // 반사 뷰 행렬 얻어오기.
-    dx::XMMATRIX reflection = m_pCamera->GetReflectionMatrix(-1.5f);
-
+    m_pModelCube->SetYaw(yaw);
     m_pModelCube->Bind(*m_pD3D);
-    m_pTextureShader->Bind(*m_pD3D, m_pModelCube->GetIndexCount(), world, reflection, projection, m_pModelCube->GetTextureArray()[0]);
+    m_pTextureShader->Bind(*m_pD3D, m_pModelCube->GetIndexCount(), world, view, projection, m_pModelCube->GetTextureArray()[0]);
 
     m_pD3D->SetBackBufferRenderTarget();
 
     return;
 }
 
-void Graphics::RenderScene()
+void Graphics::RenderFadingScene()
 {
-    dx::XMMATRIX world1 = m_pModelCube->GetWorldMatrix();
-    dx::XMMATRIX world2 = m_pModelFloor->GetWorldMatrix();
+    dx::XMMATRIX world = m_pD3D->GetWorldMatrix();
+    dx::XMMATRIX view = m_pCamera->GetViewMatrix();
+    dx::XMMATRIX projection = m_pD3D->GetOrthMatrix();
+
+    m_pD3D->BeginFrame(0.0f, 0.0f, 0.0f, 1.0f);
+    m_pD3D->TurnZBufferOff();
+
+    m_pBitmap->Bind(*m_pD3D, 0, 0);
+    m_pFadeShader->Bind(*m_pD3D, m_pBitmap->GetIndexCount(), world, view, projection, m_pRenderToTexture->GetShaderResourceView(), m_fadePercentage);
+
+    m_pD3D->TurnZBufferOn();
+    m_pD3D->EndFrame();
+}
+
+void Graphics::RenderScene(float yaw)
+{
+    dx::XMMATRIX world = m_pModelCube->GetWorldMatrix();
     dx::XMMATRIX view = m_pCamera->GetViewMatrix();
     dx::XMMATRIX projection = m_pD3D->GetProjectionMatrix();
     dx::XMMATRIX reflection = m_pCamera->GetReflectionMatrix(-1.5f);
 
     m_pD3D->BeginFrame(0.0f, 0.0f, 0.0f, 1.0f);
-
+    
+    m_pModelCube->SetYaw(yaw);
     m_pModelCube->Bind(*m_pD3D);
-    m_pTextureShader->Bind(*m_pD3D, m_pModelCube->GetIndexCount(), world1, view, projection, m_pModelCube->GetTextureArray()[0]);
-
-    m_pModelFloor->Bind(*m_pD3D);
-    m_pReflectionShader->Bind(*m_pD3D, m_pModelFloor->GetIndexCount(), world2, view, projection, m_pModelFloor->GetTextureArray()[0],
-        m_pRenderToTexture->GetShaderResourceView(), reflection);
+    m_pTextureShader->Bind(*m_pD3D, m_pModelCube->GetIndexCount(), world, view, projection, m_pModelCube->GetTextureArray()[0]);
 
 #pragma region UI
     m_pModelCube->SpawnControlWindow();

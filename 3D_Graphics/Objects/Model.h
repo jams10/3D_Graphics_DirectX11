@@ -48,6 +48,7 @@ public:
 	ID3D11ShaderResourceView** GetTextureArray();
 	DirectX::XMMATRIX GetWorldMatrix() const noexcept;
 	void SetPosition(float x, float y, float z);
+	void SetYaw(float yaw_in);
 	void SpawnControlWindow() noexcept;
 
 private:

@@ -33,6 +33,11 @@ void Model::SetPosition(float x, float y, float z)
     pos.z = z;
 }
 
+void Model::SetYaw(float yaw_in)
+{
+    yaw = yaw_in;
+}
+
 void Model::Initialize(D3DGraphics& gfx, std::string modelFilePath, 
                        std::string textureFilePath1, std::string textureFilePath2, std::string textureFilePath3)
 {

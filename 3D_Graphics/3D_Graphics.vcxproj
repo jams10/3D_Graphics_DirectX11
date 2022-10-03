@@ -117,7 +117,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>Debug\DirectXTex.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -159,6 +159,7 @@
     <ClCompile Include="Objects\ModelList.cpp" />
     <ClCompile Include="Shaders\AlphaMapShader.cpp" />
     <ClCompile Include="Shaders\ClipPlaneShader.cpp" />
+    <ClCompile Include="Shaders\FadeShader.cpp" />
     <ClCompile Include="Shaders\FogShader.cpp" />
     <ClCompile Include="Shaders\LightMapShader.cpp" />
     <ClCompile Include="Shaders\LightShader.cpp" />
@@ -229,6 +230,7 @@
     <ClInclude Include="Objects\ModelList.h" />
     <ClInclude Include="Shaders\AlphaMapShader.h" />
     <ClInclude Include="Shaders\ClipPlaneShader.h" />
+    <ClInclude Include="Shaders\FadeShader.h" />
     <ClInclude Include="Shaders\FogShader.h" />
     <ClInclude Include="Shaders\LightMapShader.h" />
     <ClInclude Include="Shaders\LightShader.h" />
@@ -324,6 +326,20 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\Shaders\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
     <FxCompile Include="Shaders\DiffuseLightingVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\Shaders\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\FadePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\Shaders\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\FadeVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>

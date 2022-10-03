@@ -13,7 +13,7 @@ class Camera;
 class Model;
 class LightShader;
 class TextureShader;
-class ReflectionShader;
+class FadeShader;
 class RenderToTexture;
 class DebugWindow;
 class Light;
@@ -38,12 +38,17 @@ public:
 
 private:
 	bool Render(DXSound* pSound, int fps, int cpuUsage, float dt);
-	void RenderToTextureFunc();
-	void RenderScene();
+	void RenderToTextureFunc(float yaw);
+	void RenderFadingScene();
+	void RenderScene(float yaw);
 	
 private:
 	float accumulatedTime;
 	float blendAmount;
+	float m_fadeInTime;
+	float m_accumulatedTime;
+	float m_fadePercentage;
+	bool m_fadeDone;
 
 private:
 	D3DGraphics* m_pD3D;
@@ -54,7 +59,7 @@ private:
 	Model* m_pModelFloor;
 	LightShader* m_pLightShader;
 	TextureShader* m_pTextureShader;
-	ReflectionShader* m_pReflectionShader;
+	FadeShader* m_pFadeShader;
 	DebugWindow* m_pDebugWindow;
 	RenderToTexture* m_pRenderToTexture;
 	Light* m_pLight;

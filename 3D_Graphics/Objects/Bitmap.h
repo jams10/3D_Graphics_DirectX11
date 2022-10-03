@@ -8,8 +8,7 @@ public:
 	Bitmap();
 	~Bitmap();
 
-	void Initialize(D3DGraphics& gfx, int screenWidth, int screenHeight, 
-		            std::string textureFilePath, int bitmapWidth, int bitmapHeight);
+	void Initialize(D3DGraphics& gfx, int screenWidth, int screenHeight, int bitmapWidth, int bitmapHeight);
 	void Bind(D3DGraphics& gfx, int positionX, int positionY);
 	void Release();
 

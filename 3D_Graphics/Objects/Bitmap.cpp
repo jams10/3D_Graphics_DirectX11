@@ -11,8 +11,7 @@ Bitmap::~Bitmap()
 {
 }
 
-void Bitmap::Initialize(D3DGraphics& gfx, int screenWidth, int screenHeight, 
-	                    std::string textureFilePath, int bitmapWidth, int bitmapHeight)
+void Bitmap::Initialize(D3DGraphics& gfx, int screenWidth, int screenHeight, int bitmapWidth, int bitmapHeight)
 {
 	// 화면 크기 저장.
 	m_screenWidth = screenWidth;
@@ -27,7 +26,6 @@ void Bitmap::Initialize(D3DGraphics& gfx, int screenWidth, int screenHeight,
 	m_previousPosY = -1;
 
 	InitializeBuffers(gfx);
-	LoadTexture(gfx, textureFilePath);
 }
 
 void Bitmap::Release()
