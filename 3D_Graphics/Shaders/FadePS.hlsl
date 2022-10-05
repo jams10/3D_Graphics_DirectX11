@@ -16,9 +16,7 @@ struct PixelInputType
 float4 main(PixelInputType input) : SV_TARGET
 {
     float4 color;
-
     color = shaderTexture.Sample(SampleType, input.tex);
-    
     // 색상의 밝기를 현재 fade 퍼센트로 감소시킴.
     color = color * fadeAmount;
 

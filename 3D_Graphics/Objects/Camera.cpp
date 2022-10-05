@@ -27,16 +27,41 @@ DirectX::XMMATRIX Camera::GetViewMatrix() const noexcept
 
 DirectX::XMMATRIX Camera::GetReflectionMatrix(float height) const noexcept
 {
-	const DirectX::XMVECTOR forwardBaseVector = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+	//const DirectX::XMVECTOR forwardBaseVector = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 
-	const auto lookVector = DirectX::XMVector3Transform(forwardBaseVector,
-		DirectX::XMMatrixRotationRollPitchYaw(pitch, yaw, 0.0f)
-	);
-	DirectX::XMFLOAT3 invpos = pos;
-	invpos.y *= -1.f;
-	auto camPosition = DirectX::XMLoadFloat3(&invpos);
-	auto camTarget = DirectX::XMVectorAdd(camPosition, lookVector);
-	return DirectX::XMMatrixLookAtLH(camPosition, camTarget, DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+	//const auto lookVector = DirectX::XMVector3Transform(forwardBaseVector,
+	//	DirectX::XMMatrixRotationRollPitchYaw(pitch, yaw, 0.0f)
+	//);
+	//DirectX::XMFLOAT3 invpos = pos;
+	//invpos.y *= -1.f;
+	//auto camPosition = DirectX::XMLoadFloat3(&invpos);
+	//auto camTarget = DirectX::XMVectorAdd(camPosition, lookVector);
+	//return DirectX::XMMatrixLookAtLH(camPosition, camTarget, DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+
+	DirectX::XMFLOAT3 up, position, lookAt;
+	float radians;
+
+	// Setup the vector that points upwards.
+	up.x = 0.0f;
+	up.y = 1.0f;
+	up.z = 0.0f;
+	
+	// Setup the position of the camera in the world.
+	// For planar reflection invert the Y position of the camera.
+	position.x = pos.x;
+	position.y = -pos.y + (height * 2.0f);
+	position.z = pos.z;
+
+	// Calculate the rotation in radians.
+	radians = yaw * 0.0174532925f;
+
+	// Setup where the camera is looking.
+	lookAt.x = sinf(radians) + pos.x;
+	lookAt.y = position.y;
+	lookAt.z = cosf(radians) + pos.z;
+
+	// Create the view matrix from the three vectors.
+	return DirectX::XMMatrixLookAtLH(DirectX::XMLoadFloat3(&position), DirectX::XMLoadFloat3(&lookAt), DirectX::XMLoadFloat3(&up));
 }
 
 DirectX::XMFLOAT3 Camera::GetPosition() const

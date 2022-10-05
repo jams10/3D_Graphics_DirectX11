@@ -95,3 +95,8 @@ void Light::ResetAll() noexcept
 	ResetSpecularColor();
     lightDirection = { 0.0f, 0.0f, 1.0f };
 }
+
+void Light::SetDirection(float x, float y, float z)
+{
+	lightDirection = DirectX::XMFLOAT3(x, y, z);
+}

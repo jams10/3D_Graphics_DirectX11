@@ -165,6 +165,12 @@
     <ClCompile Include="Shaders\FadeShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shaders\WaterShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Shaders\RefractionShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App\App.h">
@@ -386,6 +392,12 @@
     <ClInclude Include="Shaders\FadeShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shaders\WaterShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\RefractionShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\SolidColorVS.hlsl" />
@@ -418,6 +430,10 @@
     <FxCompile Include="Shaders\ReflectionPS.hlsl" />
     <FxCompile Include="Shaders\FadeVS.hlsl" />
     <FxCompile Include="Shaders\FadePS.hlsl" />
+    <FxCompile Include="Shaders\WaterVS.hlsl" />
+    <FxCompile Include="Shaders\WaterPS.hlsl" />
+    <FxCompile Include="Shaders\RefractionVS.hlsl" />
+    <FxCompile Include="Shaders\RefractionPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dxtex\DirectXTex.inl">

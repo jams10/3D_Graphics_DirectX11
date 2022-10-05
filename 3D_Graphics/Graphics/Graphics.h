@@ -13,7 +13,8 @@ class Camera;
 class Model;
 class LightShader;
 class TextureShader;
-class FadeShader;
+class RefractionShader;
+class WaterShader;
 class RenderToTexture;
 class DebugWindow;
 class Light;
@@ -38,30 +39,32 @@ public:
 
 private:
 	bool Render(DXSound* pSound, int fps, int cpuUsage, float dt);
-	void RenderToTextureFunc(float yaw);
-	void RenderFadingScene();
-	void RenderScene(float yaw);
+	void RenderRefractionTexture();
+	void RenderReflectionTexture();
+	void RenderScene();
 	
 private:
-	float accumulatedTime;
-	float blendAmount;
-	float m_fadeInTime;
-	float m_accumulatedTime;
-	float m_fadePercentage;
-	bool m_fadeDone;
+	float m_waterTranslation;
+	float m_waterTranslationDelta = 0.001f;;
+	float m_waterHeight;
+	float m_reflectRefractScale = 0.01f;
 
 private:
 	D3DGraphics* m_pD3D;
 	D2DGraphics* m_pD2D;
 	Camera* m_pCamera;
 	Camera* m_pFixedCamera;
-	Model* m_pModelCube;
-	Model* m_pModelFloor;
+	Model* m_pModelWall;
+	Model* m_pModelGround;
+	Model* m_pModelBath;
+	Model* m_pModelWater;
 	LightShader* m_pLightShader;
 	TextureShader* m_pTextureShader;
-	FadeShader* m_pFadeShader;
+	RefractionShader* m_pRefractionShader;
+	WaterShader* m_pWaterShader;
 	DebugWindow* m_pDebugWindow;
-	RenderToTexture* m_pRenderToTexture;
+	RenderToTexture* m_pRefractionTexture;
+	RenderToTexture* m_pReflectionTexture;
 	Light* m_pLight;
 	Bitmap* m_pBitmap;
 	Frustum* m_pFrustum;

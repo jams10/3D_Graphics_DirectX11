@@ -18,6 +18,7 @@ public:
 	void ResetSpecularPower() noexcept;
 	void ResetSpecularColor () noexcept;
 	void ResetAll() noexcept;
+	void SetDirection(float x, float y, float z);
 private:
 	DirectX::XMFLOAT4 ambientColor;
 	DirectX::XMFLOAT4 diffuseColor;
