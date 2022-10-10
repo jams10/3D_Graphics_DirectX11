@@ -11,11 +11,9 @@ class D3DGraphics;
 class D2DGraphics;
 class Camera;
 class Model;
+class PointLightShader;
 class LightShader;
 class TextureShader;
-class RefractionShader;
-class WaterShader;
-class RenderToTexture;
 class DebugWindow;
 class Light;
 class Bitmap;
@@ -39,33 +37,19 @@ public:
 
 private:
 	bool Render(DXSound* pSound, int fps, int cpuUsage, float dt);
-	void RenderRefractionTexture();
-	void RenderReflectionTexture();
 	void RenderScene();
 	
-private:
-	float m_waterTranslation;
-	float m_waterTranslationDelta = 0.001f;;
-	float m_waterHeight;
-	float m_reflectRefractScale = 0.01f;
-
 private:
 	D3DGraphics* m_pD3D;
 	D2DGraphics* m_pD2D;
 	Camera* m_pCamera;
 	Camera* m_pFixedCamera;
-	Model* m_pModelWall;
 	Model* m_pModelGround;
-	Model* m_pModelBath;
-	Model* m_pModelWater;
+	PointLightShader* m_pPointLightShader;
 	LightShader* m_pLightShader;
 	TextureShader* m_pTextureShader;
-	RefractionShader* m_pRefractionShader;
-	WaterShader* m_pWaterShader;
 	DebugWindow* m_pDebugWindow;
-	RenderToTexture* m_pRefractionTexture;
-	RenderToTexture* m_pReflectionTexture;
-	Light* m_pLight;
+	Light* m_pLights;
 	Bitmap* m_pBitmap;
 	Frustum* m_pFrustum;
 	ModelList* m_pModelList;

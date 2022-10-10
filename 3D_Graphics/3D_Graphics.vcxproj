@@ -165,6 +165,7 @@
     <ClCompile Include="Shaders\LightShader.cpp" />
     <ClCompile Include="Shaders\MultiTextureShader.cpp" />
     <ClCompile Include="Shaders\NormalMapShader.cpp" />
+    <ClCompile Include="Shaders\PointLightShader.cpp" />
     <ClCompile Include="Shaders\ReflectionShader.cpp" />
     <ClCompile Include="Shaders\RefractionShader.cpp" />
     <ClCompile Include="Shaders\SolidColorShader.cpp" />
@@ -238,6 +239,7 @@
     <ClInclude Include="Shaders\LightShader.h" />
     <ClInclude Include="Shaders\MultiTextureShader.h" />
     <ClInclude Include="Shaders\NormalMapShader.h" />
+    <ClInclude Include="Shaders\PointLightShader.h" />
     <ClInclude Include="Shaders\ReflectionShader.h" />
     <ClInclude Include="Shaders\RefractionShader.h" />
     <ClInclude Include="Shaders\SolidColorShader.h" />
@@ -397,6 +399,20 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\Shaders\%(Filename).cso</ObjectFileOutput>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\PointLightVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\Shaders\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\PointLightPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\Shaders\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
     <FxCompile Include="Shaders\ReflectionPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

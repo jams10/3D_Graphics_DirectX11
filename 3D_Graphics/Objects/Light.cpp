@@ -35,36 +35,48 @@ DirectX::XMFLOAT4 Light::GetSpecularColor() const noexcept
 	return specularColor;
 }
 
-void Light::SpawnControlWindow() noexcept
+DirectX::XMFLOAT4 Light::GetPosition() const
+{
+	return position;
+}
+
+void Light::SpawnControlWindow(float index) noexcept
 {
 	if (ImGui::Begin("Light"))
 	{
+		ImGui::PushID(index);
 		ImGui::Text("Diffuse Color");
 		ImGui::ColorPicker3("Diffuse Color", &diffuseColor.x);
 		if (ImGui::Button("Reset Diffuse"))
 		{
 			ResetDiffuse();
 		}
-		ImGui::Text("Ambient Color");
-		ImGui::ColorPicker3("Ambient Color", &ambientColor.x);
-		if (ImGui::Button("Reset Ambient"))
+		ImGui::Text("Position");
+		ImGui::SliderFloat("X", &position.x, -80.0f, 80.0f, "%.1f");
+		ImGui::SliderFloat("Y", &position.y, -80.0f, 80.0f, "%.1f");
+		ImGui::SliderFloat("Z", &position.z, -80.0f, 80.0f, "%.1f");
+		if (ImGui::Button("Reset Position"))
 		{
-			ResetAmbient();
+			ResetPosition();
 		}
-		ImGui::Text("Specular Color");
-		ImGui::ColorPicker3("Specular Color", &specularColor.x);
-		if (ImGui::Button("Reset Specular Color"))
-		{
-			ResetSpecularColor();
-		}
-		ImGui::Text("Specular Power");
-		ImGui::SliderFloat("Power", &specularPower, 16.0f, 64.0f, "%.1f");
-		if (ImGui::Button("Reset Specular Power"))
-		{
-			ResetSpecularPower();
-		}
+		ImGui::PopID();
 	}
 	ImGui::End();
+}
+
+void Light::SetPosition(float x, float y, float z)
+{
+	position = DirectX::XMFLOAT4(x, y, z, 1.0f);
+}
+
+void Light::SetColor(float r, float g, float b)
+{
+	diffuseColor = DirectX::XMFLOAT4(r, g, b, 1.0f);
+}
+
+void Light::ResetPosition() noexcept
+{
+	position = { 0.0f, 1.0f, 0.0f, 1.0f };
 }
 
 void Light::ResetAmbient() noexcept
@@ -93,6 +105,7 @@ void Light::ResetAll() noexcept
 	ResetDiffuse();
 	ResetSpecularPower();
 	ResetSpecularColor();
+	ResetPosition();
     lightDirection = { 0.0f, 0.0f, 1.0f };
 }
 

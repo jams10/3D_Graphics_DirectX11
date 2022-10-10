@@ -171,6 +171,9 @@
     <ClCompile Include="Shaders\RefractionShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shaders\PointLightShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App\App.h">
@@ -398,6 +401,9 @@
     <ClInclude Include="Shaders\RefractionShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shaders\PointLightShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\SolidColorVS.hlsl" />
@@ -434,6 +440,8 @@
     <FxCompile Include="Shaders\WaterPS.hlsl" />
     <FxCompile Include="Shaders\RefractionVS.hlsl" />
     <FxCompile Include="Shaders\RefractionPS.hlsl" />
+    <FxCompile Include="Shaders\PointLightVS.hlsl" />
+    <FxCompile Include="Shaders\PointLightPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dxtex\DirectXTex.inl">
