@@ -16,6 +16,8 @@ DXSound::DXSound()
 	m_pDirectSound = nullptr;
 	m_pPrimaryBuffer = nullptr;
 	m_pSecondaryBuffer = nullptr;
+	m_listener = nullptr;
+	m_secondary3DBuffer = nullptr;
 	m_volume = DSBVOLUME_MAX;
 }
 
@@ -25,17 +27,17 @@ void DXSound::Initialize(HWND hwnd)
 	InitializeDirectSound(hwnd);
 
 	// secondary buffer에 wav 오디오 파일을 불러옴.
-	LoadWaveFile("Sound/Ding.wav", &m_pSecondaryBuffer);
+	LoadWaveFile("Sound/sound02.wav", &m_pSecondaryBuffer, &m_secondary3DBuffer);
 
 	// secondary buffer에 불러온 wav 오디오 파일을 재생함.
-	// PlayWaveFile();
+	PlayWaveFile();
 }
 
 
 void DXSound::Shutdown()
 {
 	// 보조 버퍼를 해제
-	ShutdownWaveFile(&m_pSecondaryBuffer);
+	ShutdownWaveFile(&m_pSecondaryBuffer, &m_secondary3DBuffer);
 
 	// Directsound API를 닫기.
 	ShutdownDirectSound();
@@ -58,7 +60,7 @@ void DXSound::InitializeDirectSound(HWND hwnd)
 
 	// 메인 버퍼 서술자를 설정.
 	bufferDesc.dwSize = sizeof(DSBUFFERDESC);
-	bufferDesc.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_CTRLVOLUME;
+	bufferDesc.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRL3D;
 	bufferDesc.dwBufferBytes = 0;
 	bufferDesc.dwReserved = 0;
 	bufferDesc.lpwfxFormat = NULL;
@@ -80,11 +82,19 @@ void DXSound::InitializeDirectSound(HWND hwnd)
 	// 위에서 지정해준 wav 파일 형식으로 메인 버퍼를 설정.
 	DXSOUND_THROW_INFO(m_pPrimaryBuffer->SetFormat(&waveFormat));
 
+	// listener 인터페이스를 얻어옴.
+	DXSOUND_THROW_INFO(m_pPrimaryBuffer->QueryInterface(IID_IDirectSound3DListener8, (LPVOID*)&m_listener));
+
+	// listener의 초기 위치를 월드의 (0,0,0)으로 설정함.
+	m_listener->SetPosition(0.0f, 0.0f, 0.0f, DS3D_IMMEDIATE);
 }
 
 
 void DXSound::ShutdownDirectSound()
 {
+	// listener 해제.
+	SAFE_RELEASE(m_listener)
+
 	// 메인 사운드 버퍼 포인터를 해제.
 	SAFE_RELEASE(m_pPrimaryBuffer)
 
@@ -93,7 +103,7 @@ void DXSound::ShutdownDirectSound()
 }
 
 
-void DXSound::LoadWaveFile(const char* filename, IDirectSoundBuffer8** secondaryBuffer)
+void DXSound::LoadWaveFile(const char* filename, IDirectSoundBuffer8** secondaryBuffer, IDirectSound3DBuffer8** secondary3DBuffer)
 {
 	int error;
 	FILE* filePtr;
@@ -150,8 +160,8 @@ void DXSound::LoadWaveFile(const char* filename, IDirectSoundBuffer8** secondary
 		assert(0);
 	}
 
-	// .wav 파일이 스테레오 포맷으로 녹음되었는지 체크.
-	if (waveFileHeader.numChannels != 2)
+	// .wav 파일이 모노 포맷으로 녹음되었는지 체크.
+	if (waveFileHeader.numChannels != 1)
 	{
 		assert(0);
 	}
@@ -179,14 +189,14 @@ void DXSound::LoadWaveFile(const char* filename, IDirectSoundBuffer8** secondary
 	waveFormat.wFormatTag = WAVE_FORMAT_PCM;
 	waveFormat.nSamplesPerSec = 44100;
 	waveFormat.wBitsPerSample = 16;
-	waveFormat.nChannels = 2;
+	waveFormat.nChannels = 1;
 	waveFormat.nBlockAlign = (waveFormat.wBitsPerSample / 8) * waveFormat.nChannels;
 	waveFormat.nAvgBytesPerSec = waveFormat.nSamplesPerSec * waveFormat.nBlockAlign;
 	waveFormat.cbSize = 0;
 
 	// .wav 오디오 파일이 로드될 보조 버퍼의 버퍼 서술자를 설정함.
 	bufferDesc.dwSize = sizeof(DSBUFFERDESC);
-	bufferDesc.dwFlags = DSBCAPS_CTRLVOLUME;
+	bufferDesc.dwFlags = DSBCAPS_CTRLVOLUME | DSBCAPS_CTRL3D;
 	bufferDesc.dwBufferBytes = waveFileHeader.dataSize;
 	bufferDesc.dwReserved = 0;
 	bufferDesc.lpwfxFormat = &waveFormat;
@@ -240,11 +250,20 @@ void DXSound::LoadWaveFile(const char* filename, IDirectSoundBuffer8** secondary
 	delete[] waveData;
 	waveData = nullptr;
 
+	// 보조 사운드 버퍼에 대한 3D 인터페이스를 얻어옴.
+	DXSOUND_THROW_INFO((*secondaryBuffer)->QueryInterface(IID_IDirectSound3DBuffer8, (void**)&*secondary3DBuffer));
 }
 
 
-void DXSound::ShutdownWaveFile(IDirectSoundBuffer8** secondaryBuffer)
+void DXSound::ShutdownWaveFile(IDirectSoundBuffer8** secondaryBuffer, IDirectSound3DBuffer8** secondary3DBuffer)
 {
+	// 보조 버퍼에 대한 3D 인터페이스를 해제 해줌.
+	if (*secondary3DBuffer)
+	{
+		(*secondary3DBuffer)->Release();
+		*secondary3DBuffer = 0;
+	}
+
 	// 보조 버퍼를 해제해줌.
 	if (*secondaryBuffer)
 	{
@@ -265,6 +284,8 @@ void DXSound::SpawnControlWindow()
 		{
 			PlayWaveFile();
 		}
+		ImGui::SliderFloat("PositionX", &positionX, -10.0f, 10.0f, "%lf");
+		m_secondary3DBuffer->SetPosition(positionX, positionY, positionZ, DS3D_IMMEDIATE);
 	}
 	ImGui::End();
 }
@@ -278,6 +299,9 @@ void DXSound::PlayWaveFile()
 
 	// 볼륨을 100%로 설정.
 	DXSOUND_THROW_INFO(m_pSecondaryBuffer->SetVolume(m_volume));
+
+	// 사운드의 3D 위치를 설정.
+	//m_secondary3DBuffer->SetPosition(positionX, positionY, positionZ, DS3D_IMMEDIATE);
 
 	// 보조 버퍼에 있는 음원을 재생 시켜줌.
 	DXSOUND_THROW_INFO(m_pSecondaryBuffer->Play(0, 0, 0));

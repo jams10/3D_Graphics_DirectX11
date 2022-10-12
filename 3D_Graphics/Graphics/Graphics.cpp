@@ -121,12 +121,12 @@ bool Graphics::Frame(DXSound* pSound, int fps, int cpuUsage, float dt)
 
 bool Graphics::Render(DXSound* pSound, int fps, int cpuUsage, float dt)
 {
-    RenderScene();
+    RenderScene(pSound);
 
     return true;
 }
 
-void Graphics::RenderScene()
+void Graphics::RenderScene(DXSound* pSound)
 {
     m_pD3D->SetBackBufferRenderTarget();
 
@@ -152,6 +152,7 @@ void Graphics::RenderScene()
 #pragma region UI
     m_pCamera->SpawnControlWindow();
     for (int i = 0; i < 4; ++i) m_pLights[i].SpawnControlWindow(i);
+    pSound->SpawnControlWindow();
 #pragma endregion
 
     m_pD3D->EndFrame();

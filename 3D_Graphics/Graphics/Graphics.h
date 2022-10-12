@@ -37,7 +37,7 @@ public:
 
 private:
 	bool Render(DXSound* pSound, int fps, int cpuUsage, float dt);
-	void RenderScene();
+	void RenderScene(DXSound* pSound);
 	
 private:
 	D3DGraphics* m_pD3D;

@@ -84,8 +84,8 @@ private:
 	void InitializeDirectSound(HWND hwnd);
 	void ShutdownDirectSound();
 
-	void LoadWaveFile(const char* filename, IDirectSoundBuffer8** secondaryBuffer);
-	void ShutdownWaveFile(IDirectSoundBuffer8** secondaryBuffer);
+	void LoadWaveFile(const char* filename, IDirectSoundBuffer8** secondaryBuffer, IDirectSound3DBuffer8** secondary3DBuffer);
+	void ShutdownWaveFile(IDirectSoundBuffer8** secondaryBuffer, IDirectSound3DBuffer8** secondary3DBuffer);
 
 	void PlayWaveFile();
 
@@ -93,7 +93,10 @@ private:
 	int m_volume;
 
 private:
+	float positionX = -2.0f, positionY = 0.0f, positionZ = 0.0f;
 	IDirectSound8* m_pDirectSound;
 	IDirectSoundBuffer* m_pPrimaryBuffer;
 	IDirectSoundBuffer8* m_pSecondaryBuffer;
+	IDirectSound3DListener8* m_listener;
+	IDirectSound3DBuffer8* m_secondary3DBuffer;
 };
