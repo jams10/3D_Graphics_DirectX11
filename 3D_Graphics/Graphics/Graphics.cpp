@@ -4,7 +4,7 @@
 #include <Graphics/DebugWindow.h>
 #include <Graphics/RenderToTexture.h>
 #include <Shaders/TextureShader.h>
-#include <Shaders/PointLightShader.h>
+#include <Shaders/GlassShader.h>
 #include <Shaders/LightShader.h>
 #include <ErrorHandle/DxgiInfoManager.h>
 #include <ErrorHandle/CustomException.h>
@@ -31,14 +31,15 @@ Graphics::Graphics()
     m_pD3D = nullptr;
     m_pD2D = nullptr;
     m_pCamera = nullptr;
-    m_pModelGround = nullptr;
+    m_pModel = nullptr;
+    m_pWindowModel = nullptr;
+    m_pRenderToTexture = nullptr;
     m_pTextureShader = nullptr;
-    m_pPointLightShader = nullptr;
-    m_pLights = nullptr;
+    m_pGlassShader = nullptr;
+    m_pLight = nullptr;
     m_pLightShader = nullptr;
     m_pBitmap = nullptr;
     m_pFrustum = nullptr;
-    m_pModelList = nullptr;
 }
 
 Graphics::~Graphics()
@@ -53,16 +54,22 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pD2D = new D2DGraphics(*m_pD3D);
     m_pD2D->Initialize(*m_pD3D);
 
-    m_pModelGround = new Model();
-    m_pModelGround->Initialize(*m_pD3D, "Resources\\Models\\plane01.model", "Resources\\Images\\stone01.png", "Resources\\Images\\bump03.png", "Resources\\Images\\spec02.png");
+    m_pModel = new Model();
+    m_pModel->Initialize(*m_pD3D, "Resources\\Models\\Cube.model", "Resources\\Images\\seafloor2.png", "Resources\\Images\\icebump01.png", "Resources\\Images\\spec02.png");
     
+    m_pWindowModel = new Model();
+    m_pWindowModel->Initialize(*m_pD3D, "Resources\\Models\\Square.model", "Resources\\Images\\ice01.png", "Resources\\Images\\icebump01.png", "Resources\\Images\\spec02.png");
+
     m_pCamera = new Camera();
     m_pFixedCamera = new Camera();
 
-    m_pLights = new Light[4];
+    m_pLight = new Light();
 
-    m_pPointLightShader = new PointLightShader();
-    m_pPointLightShader->Initialize(*m_pD3D);
+    m_pRenderToTexture = new RenderToTexture();
+    m_pRenderToTexture->Initialize(*m_pD3D, screenWidth, screenHeight);
+
+    m_pGlassShader = new GlassShader();
+    m_pGlassShader->Initialize(*m_pD3D);
 
     m_pLightShader = new LightShader();
     m_pLightShader->Initialize(*m_pD3D);
@@ -76,19 +83,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pDebugWindow = new DebugWindow();
     m_pDebugWindow->Initialize(*m_pD3D, screenWidth, screenHeight, 100, 100);
 
-    m_pModelList = new ModelList();
-    m_pModelList->Initialize(50);
-
     m_pFrustum = new Frustum();
-
-    m_pLights[0].SetColor(1.0f, 0.0f, 0.0f);
-    m_pLights[0].SetPosition(-3.0f, 1.0f, 3.0f);
-    m_pLights[1].SetColor(0.0f, 1.0f, 0.0f);
-    m_pLights[1].SetPosition(3.0f, 1.0f, 3.0f);
-    m_pLights[2].SetColor(0.0f, 0.0f, 1.0f);
-    m_pLights[2].SetPosition(-3.0f, 1.0f, -3.0f);
-    m_pLights[3].SetColor(1.0f, 1.0f, 1.0f);
-    m_pLights[3].SetPosition(3.0f, 1.0f, -3.0f);
 
     return true;
 }
@@ -96,15 +91,15 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
 void Graphics::Shutdown()
 {
     SAFE_RELEASE(m_pFrustum)
-    SAFE_RELEASE(m_pModelList)
     SAFE_RELEASE(m_pDebugWindow)
     SAFE_RELEASE(m_pBitmap)
     SAFE_RELEASE(m_pTextureShader)
-    SAFE_RELEASE(m_pPointLightShader)
+    SAFE_RELEASE(m_pGlassShader)
     SAFE_RELEASE(m_pLightShader)
-    if (m_pLights) delete[] m_pLights;
+    SAFE_RELEASE(m_pLight)
     SAFE_RELEASE(m_pCamera)
-    SAFE_RELEASE(m_pModelGround)
+    SAFE_RELEASE(m_pWindowModel)
+    SAFE_RELEASE(m_pModel)
     SAFE_RELEASE(m_pD2D)
     SAFE_RELEASE(m_pD3D)
 }
@@ -121,38 +116,52 @@ bool Graphics::Frame(DXSound* pSound, int fps, int cpuUsage, float dt)
 
 bool Graphics::Render(DXSound* pSound, int fps, int cpuUsage, float dt)
 {
-    RenderScene(pSound);
+    RenderSceneToTexture();
+    RenderScene();
 
     return true;
 }
 
-void Graphics::RenderScene(DXSound* pSound)
+void Graphics::RenderSceneToTexture()
 {
-    m_pD3D->SetBackBufferRenderTarget();
+    // 렌더 타겟을 텍스쳐로 설정하고 정리.
+    m_pRenderToTexture->SetRenderTarget(*m_pD3D);
+    m_pRenderToTexture->ClearRenderTarget(*m_pD3D, 0.0f, 0.0f, 0.0f, 1.0f);
 
+    dx::XMMATRIX world = m_pModel->GetWorldMatrix();
+    dx::XMMATRIX view = m_pCamera->GetViewMatrix();
+    dx::XMMATRIX projection = m_pD3D->GetProjectionMatrix();
+
+    m_pModel->Bind(*m_pD3D);
+    m_pTextureShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, m_pModel->GetTextureArray()[0]);
+
+    m_pD3D->SetBackBufferRenderTarget();
+}
+
+void Graphics::RenderScene()
+{
     m_pD3D->BeginFrame(0.2f, 0.2f, 0.2f, 1.0f);
-    dx::XMMATRIX world = m_pD3D->GetWorldMatrix();
+    dx::XMMATRIX world = m_pModel->GetWorldMatrix();
     dx::XMMATRIX view = m_pCamera->GetViewMatrix();
     dx::XMMATRIX projection = m_pD3D->GetProjectionMatrix();
     
-    dx::XMFLOAT4 diffuseColors[4];
-    dx::XMFLOAT4 lightPositions[4];
+    m_pModel->Bind(*m_pD3D);
+    m_pTextureShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection, m_pModel->GetTextureArray()[0]);
 
-    for (int i = 0; i < 4; ++i)
-    {
-        diffuseColors[i] = m_pLights[i].GetDiffuseColor();
-        lightPositions[i] = m_pLights[i].GetPosition();
-    }
+    world = dx::XMMatrixTranslation(0.0f, 0.0f, -1.5f);
 
-    m_pModelGround->Bind(*m_pD3D);
-
-    m_pPointLightShader->Bind(*m_pD3D, m_pModelGround->GetIndexCount(), world, view, projection, m_pModelGround->GetTextureArray()[0],
-        diffuseColors, lightPositions);
+    m_pWindowModel->Bind(*m_pD3D);
+    m_pGlassShader->Bind(*m_pD3D, m_pWindowModel->GetIndexCount(), world, view, projection, m_pWindowModel->GetTextureArray()[0],
+        m_pWindowModel->GetTextureArray()[1], m_pRenderToTexture->GetShaderResourceView(), refractionScale);
 
 #pragma region UI
+    if (ImGui::Begin("refraction"))
+    {
+        ImGui::SliderFloat("scale", &refractionScale, 0.0f, 0.5f, "%.01f");
+    }
+    ImGui::End();
     m_pCamera->SpawnControlWindow();
-    for (int i = 0; i < 4; ++i) m_pLights[i].SpawnControlWindow(i);
-    pSound->SpawnControlWindow();
+    m_pModel->SpawnControlWindow();
 #pragma endregion
 
     m_pD3D->EndFrame();

@@ -11,15 +11,15 @@ class D3DGraphics;
 class D2DGraphics;
 class Camera;
 class Model;
-class PointLightShader;
+class GlassShader;
 class LightShader;
 class TextureShader;
 class DebugWindow;
+class RenderToTexture;
 class Light;
 class Bitmap;
 class DXSound;
 class Frustum;
-class ModelList;
 
 class Graphics
 {
@@ -37,20 +37,23 @@ public:
 
 private:
 	bool Render(DXSound* pSound, int fps, int cpuUsage, float dt);
-	void RenderScene(DXSound* pSound);
+	void RenderScene();
+	void RenderSceneToTexture();
+	float refractionScale = 0.01f;
 	
 private:
 	D3DGraphics* m_pD3D;
 	D2DGraphics* m_pD2D;
 	Camera* m_pCamera;
 	Camera* m_pFixedCamera;
-	Model* m_pModelGround;
-	PointLightShader* m_pPointLightShader;
+	Model* m_pModel;
+	Model* m_pWindowModel;
+	GlassShader* m_pGlassShader;
 	LightShader* m_pLightShader;
+	RenderToTexture* m_pRenderToTexture;
 	TextureShader* m_pTextureShader;
 	DebugWindow* m_pDebugWindow;
-	Light* m_pLights;
+	Light* m_pLight;
 	Bitmap* m_pBitmap;
 	Frustum* m_pFrustum;
-	ModelList* m_pModelList;
 };
