@@ -11,11 +11,10 @@ class D3DGraphics;
 class D2DGraphics;
 class Camera;
 class Model;
-class GlassShader;
+class FireShader;
 class LightShader;
 class TextureShader;
 class DebugWindow;
-class RenderToTexture;
 class Light;
 class Bitmap;
 class DXSound;
@@ -38,7 +37,6 @@ public:
 private:
 	bool Render(DXSound* pSound, int fps, int cpuUsage, float dt);
 	void RenderScene();
-	void RenderSceneToTexture();
 	float refractionScale = 0.01f;
 	
 private:
@@ -47,10 +45,8 @@ private:
 	Camera* m_pCamera;
 	Camera* m_pFixedCamera;
 	Model* m_pModel;
-	Model* m_pWindowModel;
-	GlassShader* m_pGlassShader;
+	FireShader* m_pFireShader;
 	LightShader* m_pLightShader;
-	RenderToTexture* m_pRenderToTexture;
 	TextureShader* m_pTextureShader;
 	DebugWindow* m_pDebugWindow;
 	Light* m_pLight;

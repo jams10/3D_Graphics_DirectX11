@@ -177,6 +177,9 @@
     <ClCompile Include="Shaders\GlassShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shaders\FireShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App\App.h">
@@ -410,6 +413,9 @@
     <ClInclude Include="Shaders\GlassShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shaders\FireShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\SolidColorVS.hlsl" />
@@ -450,6 +456,8 @@
     <FxCompile Include="Shaders\PointLightPS.hlsl" />
     <FxCompile Include="Shaders\GlassVS.hlsl" />
     <FxCompile Include="Shaders\GlassPS.hlsl" />
+    <FxCompile Include="Shaders\FireVS.hlsl" />
+    <FxCompile Include="Shaders\FirePS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dxtex\DirectXTex.inl">

@@ -13,7 +13,7 @@ void TextureArray::Initialize(D3DGraphics& gfx, const std::string& file1, const 
 {
 	MakeTextureView(gfx, file1, &m_pTextures[0]);
 	MakeTextureView(gfx, file2, &m_pTextures[1]);
-	MakeTextureView(gfx, file2, &m_pTextures[2]);
+	MakeTextureView(gfx, file3, &m_pTextures[2]);
 }
 
 void TextureArray::MakeTextureView(D3DGraphics& gfx, const std::string& file, ID3D11ShaderResourceView** pTextureView)
