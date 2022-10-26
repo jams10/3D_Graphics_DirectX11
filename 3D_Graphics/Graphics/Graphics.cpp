@@ -1,9 +1,6 @@
 #include "Graphics.h"
 #include <Graphics/D3DGraphics.h>
-#include <Graphics/D2DGraphics.h>
-#include <Graphics/DebugWindow.h>
 #include <Shaders/TextureShader.h>
-#include <Shaders/FireShader.h>
 #include <Shaders/LightShader.h>
 #include <ErrorHandle/DxgiInfoManager.h>
 #include <ErrorHandle/CustomException.h>
@@ -11,9 +8,7 @@
 #include <Objects/Model.h>
 #include <Objects/Camera.h>
 #include <Objects/Light.h>
-#include <Objects/Bitmap.h>
 #include <Objects/ModelList.h>
-#include <Utils/Frustum.h>
 #include <Input/Keyboard.h>
 #include <Sound/DXSound.h>
 #include <imgui/imgui.h>
@@ -28,15 +23,10 @@
 Graphics::Graphics()
 {
     m_pD3D = nullptr;
-    m_pD2D = nullptr;
     m_pCamera = nullptr;
-    m_pModel = nullptr;
     m_pTextureShader = nullptr;
-    m_pFireShader = nullptr;
     m_pLight = nullptr;
     m_pLightShader = nullptr;
-    m_pBitmap = nullptr;
-    m_pFrustum = nullptr;
 }
 
 Graphics::~Graphics()
@@ -48,19 +38,16 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pD3D = new D3DGraphics();
     m_pD3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, Wnd, SCREEN_DEPTH, SCREEN_NEAR);
 
-    m_pD2D = new D2DGraphics(*m_pD3D);
-    m_pD2D->Initialize(*m_pD3D);
 
-    m_pModel = new Model();
-    m_pModel->Initialize(*m_pD3D, "Resources\\Models\\Square.model", "Resources\\Images\\fire01.png", "Resources\\Images\\noise01.png", "Resources\\Images\\alpha01.png");
+    m_pFloorModel = new Model();
+    m_pFloorModel->Initialize(*m_pD3D, "Resources\\Models\\Floor.model", "Resources\\Images\\grid01.png", "Resources\\Images\\noise01.png", "Resources\\Images\\alpha01.png");
     
+    m_pBillboardModel = new Model();
+    m_pBillboardModel->Initialize(*m_pD3D, "Resources\\Models\\Square.model", "Resources\\Images\\seafloor.png", "Resources\\Images\\noise01.png", "Resources\\Images\\alpha01.png");
+
     m_pCamera = new Camera();
-    m_pFixedCamera = new Camera();
 
     m_pLight = new Light();
-
-    m_pFireShader = new FireShader();
-    m_pFireShader->Initialize(*m_pD3D);
 
     m_pLightShader = new LightShader();
     m_pLightShader->Initialize(*m_pD3D);
@@ -68,29 +55,17 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pTextureShader = new TextureShader();
     m_pTextureShader->Initialize(*m_pD3D);
 
-    m_pBitmap = new Bitmap();
-    m_pBitmap->Initialize(*m_pD3D, screenWidth, screenHeight, screenWidth, screenHeight);
-
-    m_pDebugWindow = new DebugWindow();
-    m_pDebugWindow->Initialize(*m_pD3D, screenWidth, screenHeight, 100, 100);
-
-    m_pFrustum = new Frustum();
-
     return true;
 }
 
 void Graphics::Shutdown()
 {
-    SAFE_RELEASE(m_pFrustum)
-    SAFE_RELEASE(m_pDebugWindow)
-    SAFE_RELEASE(m_pBitmap)
     SAFE_RELEASE(m_pTextureShader)
-    SAFE_RELEASE(m_pFireShader)
     SAFE_RELEASE(m_pLightShader)
     SAFE_RELEASE(m_pLight)
     SAFE_RELEASE(m_pCamera)
-    SAFE_RELEASE(m_pModel)
-    SAFE_RELEASE(m_pD2D)
+    SAFE_RELEASE(m_pFloorModel)
+    SAFE_RELEASE(m_pBillboardModel)
     SAFE_RELEASE(m_pD3D)
 }
 
@@ -107,34 +82,32 @@ bool Graphics::Frame(DXSound* pSound, int fps, int cpuUsage, float dt)
 bool Graphics::Render(DXSound* pSound, int fps, int cpuUsage, float dt)
 {
     m_pD3D->BeginFrame(0.2f, 0.2f, 0.2f, 1.0f);
-    dx::XMMATRIX world = m_pModel->GetWorldMatrix();
+    dx::XMMATRIX world = m_pD3D->GetWorldMatrix();
     dx::XMMATRIX view = m_pCamera->GetViewMatrix();
     dx::XMMATRIX projection = m_pD3D->GetProjectionMatrix();
+    dx::XMMATRIX translate;
+    dx::XMFLOAT3 camPos, modelPos;
+    float angle, rotation;
 
-    static float frameTime = 0.0f;
-    float distortionScale, distortionBias;
-    XMFLOAT3 scrollSpeeds, scales;
-    XMFLOAT2 distortion1, distortion2, distortion3;
+    m_pFloorModel->Bind(*m_pD3D);
+    m_pTextureShader->Bind(*m_pD3D, m_pFloorModel->GetIndexCount(), world, view, projection, m_pFloorModel->GetTextureArray()[0]);
 
-    frameTime += dt;
-    if (frameTime > 1000.f) frameTime = 0.0f;
+    camPos = m_pCamera->GetPosition(); // 카메라 위치
+    modelPos.x = 0.0f;                 // 모델 위치
+    modelPos.y = 1.5f;
+    modelPos.z = 0.0f;
 
-    scrollSpeeds = XMFLOAT3(1.3f, 2.1f, 2.3f);
-    scales = XMFLOAT3(1.0f, 2.0f, 3.0f);
-    distortion1 = XMFLOAT2(0.1f, 0.2f);
-    distortion2 = XMFLOAT2(0.1f, 0.3f);
-    distortion3 = XMFLOAT2(0.1f, 0.2f);
-    distortionScale = 0.8f;
-    distortionBias = 0.5f;
+    // atan2 함수를 통해 카메라 위치 기준 모델의 회전 각도를 구함.
+    angle = atan2(modelPos.x - camPos.x, modelPos.z - camPos.z) * (180.0 / 3.141592f);
+    // dx 함수를 사용하기 위해 구한 각도를 60분법 각도에서 라디안 값으로 변경해줌.
+    rotation = (float)angle * 0.0174532925f;
+    // 회전 행렬, 평행이동 행렬을 구해 결합해 빌보드 모델에 적용.
+    world = dx::XMMatrixRotationY(rotation);
+    translate = dx::XMMatrixTranslation(modelPos.x, modelPos.y, modelPos.z);
+    world = dx::XMMatrixMultiply(world, translate);
 
-    m_pD3D->TurnOnAlphaBlending();
-
-    m_pModel->Bind(*m_pD3D);
-    m_pFireShader->Bind(*m_pD3D, m_pModel->GetIndexCount(), world, view, projection,
-        m_pModel->GetTextureArray()[0], m_pModel->GetTextureArray()[1], m_pModel->GetTextureArray()[2],
-        frameTime, scrollSpeeds, scales, distortion1, distortion2, distortion3, distortionScale, distortionBias);
-
-    m_pD3D->TurnOffAlphaBlending();
+    m_pBillboardModel->Bind(*m_pD3D);
+    m_pTextureShader->Bind(*m_pD3D, m_pBillboardModel->GetIndexCount(), world, view, projection, m_pBillboardModel->GetTextureArray()[0]);
 
 #pragma region UI
     //m_pCamera->SpawnControlWindow();
