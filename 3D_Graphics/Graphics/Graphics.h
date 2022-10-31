@@ -11,7 +11,7 @@ class D3DGraphics;
 class Camera;
 class Model;
 class LightShader;
-class TextureShader;
+class DepthShader;
 class Light;
 class DXSound;
 
@@ -39,6 +39,6 @@ private:
 	Model* m_pFloorModel;
 	Model* m_pBillboardModel;
 	LightShader* m_pLightShader;
-	TextureShader* m_pTextureShader;
+	DepthShader* m_pDepthShader;
 	Light* m_pLight;
 };

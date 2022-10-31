@@ -1,6 +1,6 @@
 #include "Graphics.h"
 #include <Graphics/D3DGraphics.h>
-#include <Shaders/TextureShader.h>
+#include <Shaders/DepthShader.h>
 #include <Shaders/LightShader.h>
 #include <ErrorHandle/DxgiInfoManager.h>
 #include <ErrorHandle/CustomException.h>
@@ -24,7 +24,7 @@ Graphics::Graphics()
 {
     m_pD3D = nullptr;
     m_pCamera = nullptr;
-    m_pTextureShader = nullptr;
+    m_pDepthShader = nullptr;
     m_pLight = nullptr;
     m_pLightShader = nullptr;
 }
@@ -52,15 +52,15 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND Wnd)
     m_pLightShader = new LightShader();
     m_pLightShader->Initialize(*m_pD3D);
 
-    m_pTextureShader = new TextureShader();
-    m_pTextureShader->Initialize(*m_pD3D);
+    m_pDepthShader = new DepthShader();
+    m_pDepthShader->Initialize(*m_pD3D);
 
     return true;
 }
 
 void Graphics::Shutdown()
 {
-    SAFE_RELEASE(m_pTextureShader)
+    SAFE_RELEASE(m_pDepthShader)
     SAFE_RELEASE(m_pLightShader)
     SAFE_RELEASE(m_pLight)
     SAFE_RELEASE(m_pCamera)
@@ -85,30 +85,9 @@ bool Graphics::Render(DXSound* pSound, int fps, int cpuUsage, float dt)
     dx::XMMATRIX world = m_pD3D->GetWorldMatrix();
     dx::XMMATRIX view = m_pCamera->GetViewMatrix();
     dx::XMMATRIX projection = m_pD3D->GetProjectionMatrix();
-    dx::XMMATRIX translate;
-    dx::XMFLOAT3 camPos, modelPos;
-    float angle, rotation;
 
     m_pFloorModel->Bind(*m_pD3D);
-    m_pTextureShader->Bind(*m_pD3D, m_pFloorModel->GetIndexCount(), world, view, projection, m_pFloorModel->GetTextureArray()[0]);
-
-    camPos = m_pCamera->GetPosition(); // 카메라 위치
-    modelPos.x = 0.0f;                 // 모델 위치
-    modelPos.y = 1.5f;
-    modelPos.z = 0.0f;
-
-    // atan2 함수를 통해 카메라 위치 기준 모델의 회전 각도를 구함.
-    angle = atan2(modelPos.x - camPos.x, modelPos.z - camPos.z) * (180.0 / 3.141592f);
-    // dx 함수를 사용하기 위해 구한 각도를 60분법 각도에서 라디안 값으로 변경해줌.
-    rotation = (float)angle * 0.0174532925f;
-    // 회전 행렬, 평행이동 행렬을 구해 결합해 빌보드 모델에 적용.
-    world = dx::XMMatrixRotationY(rotation);
-    translate = dx::XMMatrixTranslation(modelPos.x, modelPos.y, modelPos.z);
-    world = dx::XMMatrixMultiply(world, translate);
-
-    m_pBillboardModel->Bind(*m_pD3D);
-    m_pTextureShader->Bind(*m_pD3D, m_pBillboardModel->GetIndexCount(), world, view, projection, m_pBillboardModel->GetTextureArray()[0]);
-
+    m_pDepthShader->Bind(*m_pD3D, m_pFloorModel->GetIndexCount(), world, view, projection);
 #pragma region UI
     //m_pCamera->SpawnControlWindow();
     //m_pModel->SpawnControlWindow();
