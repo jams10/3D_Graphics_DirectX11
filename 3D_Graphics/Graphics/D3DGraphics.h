@@ -88,6 +88,7 @@ public:
 	void TurnZBufferOff();
 	void TurnOnAlphaBlending();
 	void TurnOffAlphaBlending();
+	void ResetViewport();
 
 private:
 	bool m_vsync_enabled;
@@ -107,4 +108,5 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_pDepthDisabledStencilState;
 	Microsoft::WRL::ComPtr<ID3D11BlendState> m_pAlphaEnabledBlendingState;
 	Microsoft::WRL::ComPtr<ID3D11BlendState> m_pAlphaDisabledBlendingState;
+	D3D11_VIEWPORT m_viewport;
 };

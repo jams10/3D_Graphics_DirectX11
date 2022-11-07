@@ -10,9 +10,11 @@ const float SCREEN_NEAR = 0.1f;
 class D3DGraphics;
 class Camera;
 class Model;
-class LightShader;
-class DepthShader;
-class Light;
+class TextureShader;
+class HorizontalBlurShader;
+class VerticalBlurShader;
+class RenderToTexture;
+class OrthoWindow;
 class DXSound;
 
 class Graphics
@@ -31,14 +33,26 @@ public:
 
 private:
 	bool Render(DXSound* pSound, int fps, int cpuUsage, float dt);
-	void RenderScene();
+	void RenderSceneToTexture(float dt);
+	void DownSampleTexture();
+	void RenderHorizontalBlurToTexture();
+	void RenderVerticalBlurToTexture();
+	void UpSampleTexture();
+	void Render2DTextureScene();
 	
 private:
 	D3DGraphics* m_pD3D;
 	Camera* m_pCamera;
-	Model* m_pFloorModel;
-	Model* m_pBillboardModel;
-	LightShader* m_pLightShader;
-	DepthShader* m_pDepthShader;
-	Light* m_pLight;
+	Camera* m_pFixedCamera;
+	Model* m_pModel;
+	OrthoWindow* m_pSmallWindow;
+	OrthoWindow* m_pFullscreenWindow;
+	TextureShader* m_pTextureShader;
+	HorizontalBlurShader* m_pHorizontalBlurShader;
+	VerticalBlurShader* m_pVerticalBlurShader;
+	RenderToTexture* m_pRenderToTexture;
+	RenderToTexture* m_pDownSampleTexture;
+	RenderToTexture* m_pHorizontalBlurTexture;
+	RenderToTexture* m_pVerticalBlurTexture;
+	RenderToTexture* m_pUpSampleTexture;
 };

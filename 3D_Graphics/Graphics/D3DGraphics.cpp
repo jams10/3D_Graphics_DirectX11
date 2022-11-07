@@ -133,15 +133,14 @@ bool D3DGraphics::Initialize(int screenWidth, int screenHeight, bool vsync, HWND
 	m_pContext->OMSetRenderTargets(1u, m_pTarget.GetAddressOf(), m_pDSV.Get());
 
 	// 뷰포트 설정
-	D3D11_VIEWPORT vp;
-	vp.Width = screenWidth;
-	vp.Height = screenHeight;
-	vp.MinDepth = 0.0f;
-	vp.MaxDepth = 1.0f;
-	vp.TopLeftX = 0.0f;
-	vp.TopLeftY = 0.0f;
+	m_viewport.Width = screenWidth;
+	m_viewport.Height = screenHeight;
+	m_viewport.MinDepth = 0.0f;
+	m_viewport.MaxDepth = 1.0f;
+	m_viewport.TopLeftX = 0.0f;
+	m_viewport.TopLeftY = 0.0f;
 	// 뷰포트들을 rasterizer stage에 묶는다.
-	m_pContext->RSSetViewports(1u, &vp); // 1개의 뷰포트를 세팅
+	m_pContext->RSSetViewports(1u, &m_viewport); // 1개의 뷰포트를 세팅
 
 	// 투영 행렬 계산을 위한 값들을 세팅.
 	float fieldOfView, screenAspect;
@@ -274,6 +273,12 @@ void D3DGraphics::TurnOffAlphaBlending()
 	m_pContext->OMSetBlendState(m_pAlphaDisabledBlendingState.Get(), blendFactor, 0xffffffff);
 
 	return;
+}
+
+void D3DGraphics::ResetViewport()
+{
+	// 뷰포트 설정.
+	m_pContext->RSSetViewports(1, &m_viewport);
 }
 
 #pragma region Exception

@@ -183,6 +183,15 @@
     <ClCompile Include="Shaders\DepthShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shaders\HorizontalBlurShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Shaders\VerticalBlurShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Objects\OrthoWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App\App.h">
@@ -422,6 +431,15 @@
     <ClInclude Include="Shaders\DepthShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shaders\HorizontalBlurShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\VerticalBlurShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects\OrthoWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\SolidColorVS.hlsl" />
@@ -466,6 +484,10 @@
     <FxCompile Include="Shaders\FirePS.hlsl" />
     <FxCompile Include="Shaders\DepthVS.hlsl" />
     <FxCompile Include="Shaders\DepthPS.hlsl" />
+    <FxCompile Include="Shaders\HorizontalBlurVS.hlsl" />
+    <FxCompile Include="Shaders\HorizontalBlurPS.hlsl" />
+    <FxCompile Include="Shaders\VerticalBlurVS.hlsl" />
+    <FxCompile Include="Shaders\VerticalBlurPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dxtex\DirectXTex.inl">
