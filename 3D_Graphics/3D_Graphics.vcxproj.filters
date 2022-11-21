@@ -198,6 +198,12 @@
     <ClCompile Include="Shaders\InstanceTextureShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shaders\TSColorShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Objects\TS_TestModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App\App.h">
@@ -452,6 +458,12 @@
     <ClInclude Include="Shaders\InstanceTextureShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shaders\TSColorShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects\TS_TestModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\SolidColorVS.hlsl" />
@@ -502,6 +514,10 @@
     <FxCompile Include="Shaders\VerticalBlurPS.hlsl" />
     <FxCompile Include="Shaders\InstanceTextureVS.hlsl" />
     <FxCompile Include="Shaders\InstanceTexturePS.hlsl" />
+    <FxCompile Include="Shaders\ColorTS_VS.hlsl" />
+    <FxCompile Include="Shaders\ColorTS_HS.hlsl" />
+    <FxCompile Include="Shaders\ColorTS_DS.hlsl" />
+    <FxCompile Include="Shaders\ColorTS_PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dxtex\DirectXTex.inl">

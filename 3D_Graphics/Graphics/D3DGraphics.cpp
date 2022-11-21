@@ -132,6 +132,25 @@ bool D3DGraphics::Initialize(int screenWidth, int screenHeight, bool vsync, HWND
 	// 출력 병합기에 렌더 타겟과 깊이 스텐실 뷰 묶기.
 	m_pContext->OMSetRenderTargets(1u, m_pTarget.GetAddressOf(), m_pDSV.Get());
 
+	// 레스터라이즈 스테이트 서술자 설정.
+	D3D11_RASTERIZER_DESC rasterDesc = {};
+	rasterDesc.AntialiasedLineEnable = false;
+	rasterDesc.CullMode = D3D11_CULL_BACK;
+	rasterDesc.DepthBias = 0;
+	rasterDesc.DepthBiasClamp = 0.0f;
+	rasterDesc.DepthClipEnable = true;
+	rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
+	rasterDesc.FrontCounterClockwise = false;
+	rasterDesc.MultisampleEnable = false;
+	rasterDesc.ScissorEnable = false;
+	rasterDesc.SlopeScaledDepthBias = 0.0f;
+
+	// 래스터라이즈 스테이트 생성.
+	m_pDevice->CreateRasterizerState(&rasterDesc, &m_pRasterizerState);
+
+	// 레스터라이저 스테이트 설정해줌.
+	m_pContext->RSSetState(m_pRasterizerState.Get());
+
 	// 뷰포트 설정
 	m_viewport.Width = screenWidth;
 	m_viewport.Height = screenHeight;

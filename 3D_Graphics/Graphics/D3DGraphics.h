@@ -106,6 +106,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_pDSV;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_pDepthStencilState;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_pDepthDisabledStencilState;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_pRasterizerState;
 	Microsoft::WRL::ComPtr<ID3D11BlendState> m_pAlphaEnabledBlendingState;
 	Microsoft::WRL::ComPtr<ID3D11BlendState> m_pAlphaDisabledBlendingState;
 	D3D11_VIEWPORT m_viewport;

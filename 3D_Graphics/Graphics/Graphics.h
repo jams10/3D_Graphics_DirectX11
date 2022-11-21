@@ -9,8 +9,8 @@ const float SCREEN_NEAR = 0.1f;
 
 class D3DGraphics;
 class Camera;
-class InstanceModel;
-class InstanceTextureShader;
+class TS_TestModel;
+class TSColorShader;
 class DXSound;
 
 class Graphics
@@ -33,6 +33,7 @@ private:
 private:
 	D3DGraphics* m_pD3D;
 	Camera* m_pCamera;
-	InstanceModel* m_pModel;
-	InstanceTextureShader* m_pTextureShader;
+	TS_TestModel* m_pModel;
+	TSColorShader* m_pColorShader;
+	float tessellationAmount;
 };
