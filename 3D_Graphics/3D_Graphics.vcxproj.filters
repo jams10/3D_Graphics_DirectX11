@@ -204,6 +204,12 @@
     <ClCompile Include="Objects\TS_TestModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\ParticleSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Shaders\ParticleShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App\App.h">
@@ -464,6 +470,12 @@
     <ClInclude Include="Objects\TS_TestModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics\ParticleSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\ParticleShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\SolidColorVS.hlsl" />
@@ -518,6 +530,8 @@
     <FxCompile Include="Shaders\ColorTS_HS.hlsl" />
     <FxCompile Include="Shaders\ColorTS_DS.hlsl" />
     <FxCompile Include="Shaders\ColorTS_PS.hlsl" />
+    <FxCompile Include="Shaders\ParticleVS.hlsl" />
+    <FxCompile Include="Shaders\ParticlePS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dxtex\DirectXTex.inl">
