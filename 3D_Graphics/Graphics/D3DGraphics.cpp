@@ -83,8 +83,8 @@ bool D3DGraphics::Initialize(int screenWidth, int screenHeight, bool vsync, HWND
 	// 깊이 값을 쓰지 않는 depth stencil state 생성.
 	D3D11_DEPTH_STENCIL_DESC disableDesc = {};
 	disableDesc.DepthEnable = FALSE;
-	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	disableDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	disableDesc.DepthFunc = D3D11_COMPARISON_LESS;
 	GFX_THROW_INFO(m_pDevice->CreateDepthStencilState(&disableDesc, &m_pDepthDisabledStencilState));
 
 	// 출력 병합기에 depth state 묶기.
